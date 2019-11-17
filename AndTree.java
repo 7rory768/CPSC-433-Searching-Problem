@@ -5,7 +5,7 @@ public class AndTree{
 
     private class Node{
         Slot assigned_slot;
-        Course course;
+        SlotItem assigned;
         ArrayList<Node> children;
         Node parent;    // needed to backtrack if all children violate hard constraints
     }
