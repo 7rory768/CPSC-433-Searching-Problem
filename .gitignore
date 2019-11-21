@@ -7,3 +7,8 @@
 /Slot.class
 /Solver.class
 /Validator.class
+/target/
+/.classpath
+/*.project
+/.settings
+/*.springBeans
