@@ -1,5 +1,14 @@
+package searchproblem;
+
+import java.util.ArrayList;
 
 public class Solver{
+	
+	private final Parser parser;
+	
+	public Solver(Parser parser) {
+		this.parser = parser;
+	}
 
     // gonna have to take a lot of params that the parser produces
     public void solve(){
