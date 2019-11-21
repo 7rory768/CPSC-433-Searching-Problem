@@ -14,7 +14,6 @@ public class Parser {
 	private final ArrayList<Lab> labs = new ArrayList<Lab>();
 	private final ArrayList<Slot> courseSlots = new ArrayList<Slot>(), labSlots = new ArrayList<Slot>();
 	private final HashMap<ScheduledClass, ScheduledClass> incompatibleClassPairs = new HashMap<>(), preferredClassPairs = new HashMap<>();
-	private final HashMap<ScheduledClass, Slot> unwantedSlots = new HashMap<>();
 	private final ArrayList<ClassPreference> classPreferences = new ArrayList<ClassPreference>();
 	private String name;
 	// TODO: Forced partial assignments ?
@@ -69,11 +68,11 @@ public class Parser {
 						int slotTime = Integer.valueOf(args[2].trim().replace(":", ""));
 						if (scheduledClass instanceof Course) {
 							// TODO: Unsure as to which is more efficient?
-							this.unwantedSlots.put(scheduledClass, getCourseSlot(day, slotTime));
+							//this.unwantedSlots.put(scheduledClass, getCourseSlot(day, slotTime));
 							scheduledClass.addUnwantedSlot(getCourseSlot(day, slotTime));
 						} else {
 							// TODO: Unsure as to which is more efficient?
-							this.unwantedSlots.put(scheduledClass, getLabSlot(day, slotTime));
+							//this.unwantedSlots.put(scheduledClass, getLabSlot(day, slotTime));
 							scheduledClass.addUnwantedSlot(getLabSlot(day, slotTime));
 						}
 					} else if (parserSection == ParserSection.PREFERENCES) {
@@ -138,8 +137,21 @@ public class Parser {
 		return labSlots;
 	}
 	
-	public boolean areClassesImcompatible(ScheduledClass class1, ScheduledClass class2) {
+	public boolean areClassesIncompatible(ScheduledClass class1, ScheduledClass class2) {
 		return this.incompatibleClassPairs.get(class1) == class2 || this.incompatibleClassPairs.get(class2) == class1;
+	}
+	
+	public boolean isAPreferredPair(ScheduledClass class1, ScheduledClass class2) {
+		return this.preferredClassPairs.get(class1) == class2 || this.preferredClassPairs.get(class2) == class1;
+	}
+	
+	public ClassPreference getClassPreference(ScheduledClass scheduledClass) {
+		for (ClassPreference classPreference : this.classPreferences) {
+			if (classPreference.getScheduledClass() == scheduledClass) {
+				return classPreference;
+			}
+		}
+		return null;
 	}
 	
 	/**
@@ -193,7 +205,7 @@ public class Parser {
 				}
 			}
 		}
-		return null;
+		return scheduledClass;
 	}
 	
 	public Slot getCourseSlot(Day day, int slotTime) {
