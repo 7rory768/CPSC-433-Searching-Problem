@@ -13,5 +13,14 @@ public enum ParserSection {
 	PREFERENCES(),
 	PAIRS(),
 	PARTIAL_ASSIGNMENTS();
+
+	/*
+	 * private final String sectionMarker;
+	 * 
+	 * ParserSection(String sectionMarker) { this.sectionMarker = sectionMarker; }
+	 * 
+	 * public ParserSection getParserSection(String sectionMarker) { for
+	 * (ParserSection parserSection : ) }
+	 */
 	
 }

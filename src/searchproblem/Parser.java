@@ -23,8 +23,32 @@ public class Parser {
 				Scanner scanner = new Scanner(file);
 				ParserSection parserSection = ParserSection.NONE;
 				while(scanner.hasNextLine()) {
-					String line = scanner.nextLine();
+					String line = scanner.nextLine().trim();
 					if (line.trim().equals("")) parserSection = ParserSection.NONE;
+					
+					if (line.equalsIgnoreCase("Name:")) {
+						parserSection = ParserSection.NAME;
+					} else if (line.equalsIgnoreCase("Course slots:")) {
+						parserSection = ParserSection.COURSE_SLOTS;
+					} else if (line.equalsIgnoreCase("Lab slots:")) {
+						parserSection = ParserSection.LAB_SLOTS;
+					} else if (line.equalsIgnoreCase("Courses:")) {
+						parserSection = ParserSection.COURSES;
+					} else if (line.equalsIgnoreCase("Labs")) {
+						parserSection = ParserSection.LABS;
+					} else if (line.equalsIgnoreCase("Not compatible:")) {
+						parserSection = ParserSection.NON_COMPATIBLES;
+					} else if (line.equalsIgnoreCase("Unwanted:")) {
+						parserSection = ParserSection.UNWANTED;
+					} else if (line.equalsIgnoreCase("Preferences")) {
+						parserSection = ParserSection.PREFERENCES;
+					} else if (line.equalsIgnoreCase("Pair:")) {
+						parserSection = ParserSection.PAIRS;
+					} else if (line.contains(":")) {
+						System.out.println("ERROR: Unknown section: \"" + line + "\"");
+					}
+					
+					
 				}
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
