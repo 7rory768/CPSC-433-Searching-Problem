@@ -99,6 +99,7 @@ public class Parser {
 						// TODO: ?
 					}
 				}
+				scanner.close();
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
