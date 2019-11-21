@@ -12,3 +12,6 @@
 /*.project
 /.settings
 /*.springBeans
+/bin
+/bin/
+bin
