@@ -1,6 +1,10 @@
 package searchproblem;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Scanner;
 
 import searchproblem.classes.*;
 
@@ -9,12 +13,23 @@ public class Parser {
 	private final ArrayList<Course> courses = new ArrayList<Course>();
 	private final ArrayList<Lab> labs = new ArrayList<Lab>();
 	private final ArrayList<Slot> courseSlots = new ArrayList<Slot>(), labSlots = new ArrayList<Slot>();
-	private final ArrayList<ClassPair> incompatibleClassPairs = new ArrayList<ClassPair>(), preferredClassPairs = new ArrayList<ClassPair>();
+	private final HashMap<ScheduledClass, ScheduledClass> incompatibleClassPairs = new HashMap<>(), preferredClassPairs = new HashMap<>();
 	private final ArrayList<ClassPreference> classPreferences = new ArrayList<ClassPreference>();
 	// TODO: Forced partial assignments ?
-
-	public Parser(String fileName) {
-		// TODO: Parse file;
+	
+	public Parser(File file) {
+		if (file.exists()) {
+			try {
+				Scanner scanner = new Scanner(file);
+				ParserSection parserSection = ParserSection.NONE;
+				while(scanner.hasNextLine()) {
+					String line = scanner.nextLine();
+					if (line.trim().equals("")) parserSection = ParserSection.NONE;
+				}
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -44,21 +59,11 @@ public class Parser {
 	public ArrayList<Slot> getLabSlots() {
 		return labSlots;
 	}
-
-	/**
-	 * @return the incompatibleClassPairs
-	 */
-	public ArrayList<ClassPair> getIncompatibleClassPairs() {
-		return incompatibleClassPairs;
+	
+	public boolean areClassesImcompatible(ScheduledClass class1, ScheduledClass class2) {
+		return this.incompatibleClassPairs.get(class1) == class2 || this.incompatibleClassPairs.get(class2) == class1;
 	}
-
-	/**
-	 * @return the preferredClassPairs
-	 */
-	public ArrayList<ClassPair> getPreferredClassPairs() {
-		return preferredClassPairs;
-	}
-
+	
 	/**
 	 * @return the classPreferences
 	 */
