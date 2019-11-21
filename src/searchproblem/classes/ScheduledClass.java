@@ -46,5 +46,17 @@ public abstract class ScheduledClass {
 	public void addUnwantedSlot(Slot slot) {
 		this.unwantedSlots.add(slot);
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o == this) return true;
+		
+		if (!(o instanceof ScheduledClass)) return false;
+		
+		ScheduledClass scheduledClass = (ScheduledClass) o;
+		if (scheduledClass.getDepartment().equals(this.getDepartment()) && scheduledClass.getCourseNum() == this.getCourseNum() && scheduledClass.getLectureNum() == this.getLectureNum()) return true;
+		
+		return false;
+	}
 
 }

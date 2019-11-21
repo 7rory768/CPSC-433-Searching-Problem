@@ -21,5 +21,17 @@ public class Lab extends ScheduledClass {
 	public int getTutorialNum() {
 		return tutorialNum;
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o == this) return true;
+		
+		if (!(o instanceof Lab)) return false;
+		
+		Lab lab = (Lab) o;
+		if (lab.getDepartment().equals(this.getDepartment()) && lab.getCourseNum() == this.getCourseNum() && lab.getLectureNum() == this.getLectureNum() && lab.getTutorialNum() == this.getTutorialNum()) return true;
+		
+		return false;
+	}
     
 }
