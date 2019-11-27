@@ -1,6 +1,9 @@
 package searchproblem;
 
 import java.util.ArrayList;
+import java.util.Collections;
+
+import searchproblem.classes.*;
 
 public class Solver{
 	
@@ -15,110 +18,114 @@ public class Solver{
         this.validator = new Validator(parser);
 	}
 
-    // gonna have to take a lot of params that the parser produces
     public void solve(){
         Node root = new Node();
-        Node currentNode = root;
-
         ArrayList<Node> bestSolution = new ArrayList<Node>();
 
-        int solutionLength = parser.getCourses().size() + parser.getLabs().size();
-
-        ArrayList<ScheduledItem> toBeScheduled = parser.getCourses().addAll(parser.getLabs());
+        ArrayList<ScheduledClass> toBeScheduled = new ArrayList<ScheduledClass>(parser.getCourses());
+        toBeScheduled.addAll(parser.getLabs());
         
         // TO-DO Need to decide the data structure that stores a partial assignment
-        ArrayList<Pair> partialAssignments = parser.getPartialAssignments();
-        ArrayList<Node> partialSolution;
-        int currentPenalty = 0;
+        // ArrayList<Pair> partialAssignments = parser.getPartialAssignments();
+        ArrayList<Node> partialSolution = new ArrayList<Node>();
+        partialSolution.add(root);
         
-        for(Pair pa : partialAssignments){
-            Node newNode = new Node();
-            //assign newNodes Slot and Course/Lab
-            // assign newNodes penalty with Eval, add to minPenalty
-            // check if valid .. if not then hard constraints contradict each other .. return error msg
-            partialSolution.add(newNode)
-        }
+        // for(Pair pa : partialAssignments){
+        //     Node newNode = new Node();
+        //     //assign newNodes Slot and Course/Lab
+        //     // check if valid .. if not then hard constraints contradict each other .. return error msg
+        //     currentPenalty += evaluator.evaluate(partialSolution, newNode);
+        //     partialSolution.add(newNode)
+        //     // remove these classes / labs from toBeScheduled
+        // }
 
-	
-	    bestSolution = depthFirstSolve(partialSolution, toBeScheduled, solutionLength);	// return an empty list if no solution exists, check if empty after calling this\
-        if(bestSolution.size() == 0){
+        // returns an empty list if no solution exists, check if empty after calling this
+	    bestSolution = depthFirstSolve(partialSolution, toBeScheduled);	
+        if(bestSolution.isEmpty()){
             System.out.println("No solution found for this problem.");
             System.exit(0);
         }
-        minPenalty = evaluator.evaluate(bestSolution);  //probably more efficient ways to get this
-		bestSolution = breadthFirstSolve(partialSolution, toBeScheduled, minPenalty, solutionLength);
-        minPenalty = evaluator.evaluate(bestSolution);
-        System.out.println("Found an assignment with penalty of: " + Integer.toString(minPenalty));
+		bestSolution = breadthFirstSolve(partialSolution, toBeScheduled, 0);
+        if(!bestSolution.isEmpty()){
+            System.out.println("Found an assignment with penalty of: " + Integer.toString(minPenalty));
+        }
     }
 
-    
-    private ArrayList<Node> depthFirstSolve(ArrayList<Node> solution, ArrayList<ScheduledItem> toBeScheduled){
+    private ArrayList<Node> depthFirstSolve(ArrayList<Node> solution, ArrayList<ScheduledClass> toBeScheduled){
         // basically don't use eval for this one, just want any solution
+    	// TO-DO .. think about looking at preferred slots first and unpreferred slots last if performance bad
 
-        ScheduledItem current = toBeScheduled.get(0);
+        ScheduledClass current = toBeScheduled.get(0);
         toBeScheduled.remove(0);
 
-        Node newNode = new Node(current, solution.get(solution.size()-1));
-
-        ArrayList<Slot> slots = (newNode.course != null) ? parser.getCourseSlots() : parser.getLabSlots();
+        ArrayList<Slot> slots = (current instanceof Course) ? parser.getCourseSlots() : parser.getLabSlots();
         for(Slot s : slots){
-            newNode.setSlot(s)
-            if (!validator.validate(solution, newNode)){
+            Node newNode = new Node(s, current, solution.get(solution.size()-1));
+            if (!validator.validate(newNode)){
                 continue;
             }
-            if(toBeScheduled.size() == 0){
-                System.out.println("Depth first search found a solution");
-                return solution.add(n);
+            if(toBeScheduled.isEmpty()){
+                System.out.println("Depth first search found a solution.");
+                solution.add(newNode);
+                return solution;
             } else {
-                solution.add(n);
-                ArrayList<Node> temp = depthFirstSolve(solution, toBeScheduled)
-                if (temp.size() != 0){
+                solution.add(newNode);
+                // go down this branch
+                ArrayList<Node> temp = depthFirstSolve(solution, toBeScheduled);
+                if (!temp.isEmpty()){
+                // if solution found in this branch return it up the recursion
                     return temp;
                 }
+                //else remove this node from solution and check next slot
+                solution.remove(newNode);	// optimization here is to remove last element
             }
         }
         // if hasn't returned by this point no solution in this branch
         // return empty array list
-        return new ArrayList<Node>;
+        return new ArrayList<Node>();
     }
 
-    private ArrayList<Node> breadthFirstSolve(ArrayList<Node> solution, ArrayList<ScheduledItem> toBeScheduled, currPenalty){
-        // basically don't use eval for this one, just want any solution
+    private ArrayList<Node> breadthFirstSolve(ArrayList<Node> solution, ArrayList<ScheduledClass> toBeScheduled, int currPenalty){
+        ScheduledClass current = toBeScheduled.get(0);
 
-        ScheduledItem current = toBeScheduled.get(0);
-        toBeScheduled.remove(0);
+        // so we don't mutate the list for nodes up higher in the tree
+        ArrayList<ScheduledClass> toBeScheduled_copy = new ArrayList<ScheduledClass>(toBeScheduled);
+        toBeScheduled_copy.remove(0);
 
-
-        ArrayList<Slot> slots = (newNode.course != null) ? parser.getCourseSlots() : parser.getLabSlots();
-        ArrayList<Node> orderedBestChildren = new ArrayList<Node>;
+        ArrayList<Slot> slots = (current instanceof Course) ? parser.getCourseSlots() : parser.getLabSlots();
+        ArrayList<Node> orderedBestChildren = new ArrayList<Node>();
         int penalty;
         for(Slot s : slots){
-            Node newNode = new Node(current, s, solution.get(solution.size()-1));
-            if (!validator.validate(solution, newNode)){
+            Node newNode = new Node(s, current, solution.get(solution.size()-1));
+            if (!validator.validate(newNode)){
                 continue;
             }
-            // will want to save this in the Node
-            penalty = evaluator.evaluate(solution, newNode);
-            if(currentPenalty + penalty >= minPenalty){
+            newNode.penalty = evaluator.evaluate(newNode);
+            if(currPenalty + newNode.penalty >= minPenalty){
                 continue;
             }
-            // TO-DO insert s into the right place on orderedBestSlots
-            // for now just add it
             orderedBestChildren.add(newNode);
         }
+        Collections.sort(orderedBestChildren);
 
         // loop through orderedBestSlots to next level in tree
+        ArrayList<Node> tentativeSolution = new ArrayList<Node>();
         for(Node n : orderedBestChildren){
             ArrayList<Node> temp = solution;
-            temp.add(n)
-            if(toBeScheduled.size() == 0){
-                minPenalty = currentPenalty + evaluator.evaluate(solution, n);
-                break; // want to break on the best leaf, since no other leaf will be as good
-            } else {
-                temp = breadthFirstSolve(temp, toBeScheduled, currentPenalty + penalty)
+            penalty = n.penalty;
+            temp.add(n);
+            if(toBeScheduled_copy.isEmpty()){
+                // this is a leaf node, and has found a new best
+                minPenalty = currPenalty + penalty;
                 return temp;
+            } else {
+                temp = breadthFirstSolve(temp, toBeScheduled_copy, currPenalty + penalty);
+                if(!temp.isEmpty()){
+                    // will only be not empty if a better solution was found
+                    tentativeSolution = temp;
+                }
             }
         }
-        return new ArrayList<Node>;
+        return tentativeSolution;
     }   
 }

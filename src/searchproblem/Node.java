@@ -19,6 +19,20 @@ public class Node implements Comparable<Node>{
 		this.children = new ArrayList<Node>();
 		this.parent = null;
 	}
+	
+	public Node(Slot assigned_slot, ScheduledClass sc, Node parent){
+		this.assigned_slot = assigned_slot;
+		if (sc instanceof Course) {
+			this.course = (Course) sc;
+			this.lab =  null;
+		} else {
+			this.lab = (Lab) sc;
+			this.course = null;
+		}
+		this.parent = parent;
+		this.children = new ArrayList<Node>();
+		this.penalty = 0;
+	}
 
 	public Node(Slot assigned_slot, Course course, Node parent){
 		this.assigned_slot = assigned_slot;
