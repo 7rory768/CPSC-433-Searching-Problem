@@ -7,7 +7,7 @@ public class Slot {
     private final int minCourses;
     private final int maxCourses;
     
-    public Slot(Day day, int slotTime, int minCourses, int maxCourses) {
+    public Slot(Day day, int slotTime, int maxCourses, int minCourses) {
     	this.day = day;
     	this.slotTime = slotTime;
     	this.minCourses = minCourses;

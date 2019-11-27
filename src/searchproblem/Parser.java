@@ -9,15 +9,15 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 public class Parser {
-	
+
 	private final ArrayList<Course> courses = new ArrayList<Course>();
 	private final ArrayList<Lab> labs = new ArrayList<Lab>();
 	private final ArrayList<Slot> courseSlots = new ArrayList<Slot>(), labSlots = new ArrayList<Slot>();
-	private final HashMap<ScheduledClass, ScheduledClass> incompatibleClassPairs = new HashMap<>(), preferredClassPairs = new HashMap<>();
+	private final HashMap<ScheduledClass, ArrayList<ScheduledClass>> incompatibleClassPairs = new HashMap<>(), preferredClassPairs = new HashMap<>();
 	private final ArrayList<ClassPreference> classPreferences = new ArrayList<ClassPreference>();
 	private String name;
 	// TODO: Forced partial assignments ?
-	
+
 	public Parser(File file) {
 		if (file.exists()) {
 			try {
@@ -28,7 +28,7 @@ public class Parser {
 					if (line.equals("")) {
 						continue;
 					}
-					
+
 					ParserSection parserSectionFound = ParserSection.getParserSection(line);
 					if (parserSectionFound != null) {
 						parserSection = parserSectionFound;
@@ -36,7 +36,7 @@ public class Parser {
 					} else if (line.endsWith(":")) {
 						System.out.println("ERROR: Unknown section: \"" + line + "\"");
 					}
-					
+
 					if (parserSection == ParserSection.NAME) {
 						this.name = line;
 					} else if (parserSection == ParserSection.COURSE_SLOTS || parserSection == ParserSection.LAB_SLOTS) {
@@ -59,8 +59,15 @@ public class Parser {
 						String[] args = line.split(",");
 						String course1Text = args[0].trim(), course2Text = args[1].trim();
 						ScheduledClass scheduledClass1 = getScheduledClass(course1Text), scheduledClass2 = getScheduledClass(course2Text);
-						this.incompatibleClassPairs.put(scheduledClass1, scheduledClass2);
-						this.incompatibleClassPairs.put(scheduledClass2, scheduledClass1);
+						if(this.incompatibleClassPairs.get(scheduledClass1) == null)
+							this.incompatibleClassPairs.put(scheduledClass1, new ArrayList<ScheduledClass>());
+						
+							this.incompatibleClassPairs.get(scheduledClass1).add(scheduledClass2);		
+						
+						if(this.incompatibleClassPairs.get(scheduledClass2) == null)
+							this.incompatibleClassPairs.put(scheduledClass2, new ArrayList<ScheduledClass>());
+						
+							this.incompatibleClassPairs.get(scheduledClass2).add(scheduledClass1);
 					} else if (parserSection == ParserSection.UNWANTED) {
 						String[] args = line.split(",");
 						ScheduledClass scheduledClass = getScheduledClass(args[0]);
@@ -86,14 +93,22 @@ public class Parser {
 						} else {
 							slot = getLabSlot(day, slotTime);
 						}
-						
+
 						int weight = Integer.valueOf(args[3].trim());
 						this.classPreferences.add(new ClassPreference(scheduledClass, slot, weight));
 					} else if (parserSection == ParserSection.PAIRS) {
 						String args[] = line.split(",");
 						ScheduledClass scheduledClass1 = getScheduledClass(args[0].trim()), scheduledClass2 = getScheduledClass(args[1].trim());
-						this.preferredClassPairs.put(scheduledClass1, scheduledClass2);
-						this.preferredClassPairs.put(scheduledClass2, scheduledClass1);
+	
+						if(this.preferredClassPairs.get(scheduledClass1) == null)
+							this.preferredClassPairs.put(scheduledClass1, new ArrayList<ScheduledClass>());
+
+							this.preferredClassPairs.get(scheduledClass1).add(scheduledClass2);		
+						
+						if(this.preferredClassPairs.get(scheduledClass2) == null)
+							this.preferredClassPairs.put(scheduledClass2, new ArrayList<ScheduledClass>());
+
+							this.preferredClassPairs.get(scheduledClass2).add(scheduledClass1);
 					} else if (parserSection == ParserSection.PARTIAL_ASSIGNMENTS) {
 						// TODO: ?
 					}
@@ -104,47 +119,48 @@ public class Parser {
 			}
 		}
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	/**
 	 * @return the courses
 	 */
 	public ArrayList<Course> getCourses() {
 		return courses;
 	}
-	
+
 	/**
 	 * @return the labs
 	 */
 	public ArrayList<Lab> getLabs() {
 		return labs;
 	}
-	
+
 	/**
 	 * @return the courseSlots
 	 */
 	public ArrayList<Slot> getCourseSlots() {
 		return courseSlots;
 	}
-	
+
 	/**
 	 * @return the labSlots
 	 */
 	public ArrayList<Slot> getLabSlots() {
 		return labSlots;
 	}
-	
+
 	public boolean areClassesIncompatible(ScheduledClass class1, ScheduledClass class2) {
-		return this.incompatibleClassPairs.get(class1) == class2 || this.incompatibleClassPairs.get(class2) == class1;
+		return (this.incompatibleClassPairs.get(class1) != null && this.incompatibleClassPairs.get(class1).contains(class2)) || 
+				(this.incompatibleClassPairs.get(class2) != null && this.incompatibleClassPairs.get(class2).contains(class1));
 	}
-	
+
 	public boolean isAPreferredPair(ScheduledClass class1, ScheduledClass class2) {
-		return this.preferredClassPairs.get(class1) == class2 || this.preferredClassPairs.get(class2) == class1;
+		return this.preferredClassPairs.get(class1).contains(class2) || this.preferredClassPairs.get(class2).contains(class1);
 	}
-	
+
 	public ClassPreference getClassPreference(ScheduledClass scheduledClass) {
 		for (ClassPreference classPreference : this.classPreferences) {
 			if (classPreference.getScheduledClass() == scheduledClass) {
@@ -153,14 +169,14 @@ public class Parser {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * @return the classPreferences
 	 */
 	public ArrayList<ClassPreference> getClassPreferences() {
 		return classPreferences;
 	}
-	
+
 	private Lab createLab(String text) {
 		String[] args = text.split("\\s");
 		String department = args[0];
@@ -174,14 +190,14 @@ public class Parser {
 			return new Lab(department, courseNum, tutorialNum);
 		}
 	}
-	
+
 	private Course createCourse(String text) {
 		String[] args = text.split("\\s");
 		String department = args[0];
 		int courseNum = Integer.valueOf(args[1]), lectureNum = Integer.valueOf(args[3]);
 		return new Course(department, courseNum, lectureNum);
 	}
-	
+
 	private ScheduledClass createScheduledClass(String text) {
 		if (text.contains("TUT")) {
 			return createLab(text);
@@ -189,7 +205,7 @@ public class Parser {
 			return createCourse(text);
 		}
 	}
-	
+
 	public ScheduledClass getScheduledClass(String text) {
 		ScheduledClass scheduledClass = createScheduledClass(text);
 		if (scheduledClass instanceof Course) {
@@ -207,7 +223,7 @@ public class Parser {
 		}
 		return scheduledClass;
 	}
-	
+
 	public Slot getCourseSlot(Day day, int slotTime) {
 		for (Slot slot : this.courseSlots) {
 			if (slot.getDay() == day && slot.getSlotTime() == slotTime) {
@@ -216,7 +232,7 @@ public class Parser {
 		}
 		return null;
 	}
-	
+
 	public Slot getLabSlot(Day day, int slotTime) {
 		for (Slot slot : this.labSlots) {
 			if (slot.getDay() == day && slot.getSlotTime() == slotTime) {
@@ -225,5 +241,5 @@ public class Parser {
 		}
 		return null;
 	}
-	
+
 }
