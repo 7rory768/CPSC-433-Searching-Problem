@@ -100,8 +100,8 @@ public class Solver{
             if (!validator.validate(newNode)){
                 continue;
             }
-            newNode.penalty = evaluator.evaluate(newNode);
-            if(currPenalty + newNode.penalty >= minPenalty){
+            newNode.setTotalPenalty(evaluator.evaluate(newNode));
+            if(currPenalty + newNode.getTotalPenalty() >= minPenalty){
                 continue;
             }
             orderedBestChildren.add(newNode);
@@ -112,7 +112,7 @@ public class Solver{
         ArrayList<Node> tentativeSolution = new ArrayList<Node>();
         for(Node n : orderedBestChildren){
             ArrayList<Node> temp = solution;
-            penalty = n.penalty;
+            penalty = n.getTotalPenalty();
             temp.add(n);
             if(toBeScheduled_copy.isEmpty()){
                 // this is a leaf node, and has found a new best

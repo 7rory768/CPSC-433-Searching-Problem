@@ -12,7 +12,7 @@ public class Validator{
 	}
 	public boolean validate(Node assignment){
 		int slotCount = 1;
-		Node current = assignment.parent;
+		Node current = assignment.getParent();
 		Slot assignedSlot = assignment.getSlot();
 		Course assignedCourse = assignment.getCourse();
 		Lab assignedLab = assignment.getLab();
@@ -123,7 +123,7 @@ public class Validator{
 					&& ( parser.areClassesIncompatible(currentClass, assignedClass))){	
 				return false;
 			}
-			current = current.parent;
+			current = current.getParent();
 
 
 		}

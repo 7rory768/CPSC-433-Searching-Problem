@@ -7,17 +7,19 @@ public class Node implements Comparable<Node>{
 	private Slot assigned_slot;
 	private Course course;	//NULL if a lab is scheduled
 	private Lab lab;		//NULL if a course is scheduled
-	public int penalty;	//Penalty accrued from this course/lab assigned to assigned_slot
-	public  ArrayList<Node> children;
-	public Node parent;    // needed to backtrack if all children violate hard constraints
+	private int totalPenalty;	//total penalty for the schedule at this point
+	private int preferencePenalty; //penalty from the course in this node assigned to the slot in this node
+	private ArrayList<Node> children;
+	private Node parent;    // needed to backtrack if all children violate hard constraints
 
 	public Node(){
 		this.assigned_slot = null;
 		this.course = null;
 		this.lab = null;
-		this.penalty = 0;
 		this.children = new ArrayList<Node>();
 		this.parent = null;
+		this.totalPenalty = 0;
+		this.preferencePenalty = 0;
 	}
 	
 	public Node(Slot assigned_slot, ScheduledClass sc, Node parent){
@@ -31,7 +33,8 @@ public class Node implements Comparable<Node>{
 		}
 		this.parent = parent;
 		this.children = new ArrayList<Node>();
-		this.penalty = 0;
+		this.totalPenalty = 0;
+		this.preferencePenalty = 0;
 	}
 
 	public Node(Slot assigned_slot, Course course, Node parent){
@@ -40,7 +43,8 @@ public class Node implements Comparable<Node>{
 		this.lab = null;
 		this.parent = parent;
 		this.children = new ArrayList<Node>();
-		this.penalty = 0;
+		this.totalPenalty = 0;
+		this.preferencePenalty = 0;
 	}
 
 	public Node(Slot assigned_slot, Lab lab, Node parent){
@@ -49,12 +53,11 @@ public class Node implements Comparable<Node>{
 		this.lab = lab;
 		this.parent = parent;
 		this.children = new ArrayList<Node>();
-		this.penalty = 0;
+		this.totalPenalty = 0;
+		this.preferencePenalty = 0;
 	}
 
-	/*
-        	GETTERS BEGIN
-	 */
+	//   	GETTERS BEGIN
 	public Slot getSlot() {
 		return assigned_slot;
 	}
@@ -71,9 +74,32 @@ public class Node implements Comparable<Node>{
 	public ArrayList<Node> getChildren(){
 		return children;
 	}
-	/*
-        	GETTERS END
-	 */
+	
+	public Node getParent() {
+		return parent;
+	}
+	
+	public int getTotalPenalty() {
+		return totalPenalty;
+	}
+	
+	public int getPreferencePenalty() {
+		return preferencePenalty;
+	}
+
+
+	//		GETTERS END
+
+	
+	//			SETTERS BEGIN
+	public void setPreferencePenalty(int preferencePenalty) {
+		this.preferencePenalty = preferencePenalty;
+	}
+
+	public void setTotalPenalty(int totalPenalty) {
+		this.totalPenalty = totalPenalty;
+	}
+	//			SETTERS END
 
 	/**
 	 * 	@author Kyle Perry
@@ -86,9 +112,9 @@ public class Node implements Comparable<Node>{
 	 */
 	public int compareTo(Node other_assignment)
 	{
-		if(this.penalty == other_assignment.penalty)
+		if(this.totalPenalty == other_assignment.totalPenalty)
 			return 0;
-		else if (this.penalty > other_assignment.penalty)
+		else if (this.totalPenalty > other_assignment.totalPenalty)
 			return 1;
 		else
 			return -1;
