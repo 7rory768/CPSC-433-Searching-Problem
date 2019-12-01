@@ -92,7 +92,8 @@ public class Evaluator {
 				}
 				current2 = current2.getParent();  
 			}
-		    current.getParent();
+		   
+			current.getParent();
 		}
 		
 		//now doing preferences here we just take assignment and check if it is in preferences if it is we compare preference slot
