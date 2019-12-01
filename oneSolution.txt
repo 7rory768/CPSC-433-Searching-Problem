@@ -1,0 +1,30 @@
+Name:
+oneSolution
+
+Course slots:
+MO, 8:00, 1, 1
+TU, 9:00, 1, 1
+
+Lab slots:
+MO, 9:00, 1, 1
+TU, 10:00, 1,1
+
+Courses:
+CPSC 433 LEC 01
+SENG 311 LEC 01
+
+Labs:
+CPSC 433 LEC 01 TUT 01
+SENG 311 LEC 01 TUT 01
+
+Not compatible:
+
+Unwanted:
+CPSC 433 LEC 01, MO, 8:00
+SENG 311 LEC 01 TUT 01, TU, 10:00
+
+Preferences:
+
+Pair:
+
+Partial assignments:
