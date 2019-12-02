@@ -213,7 +213,7 @@ public class Parser {
 	}
 	
 	private ScheduledClass createScheduledClass(String text) {
-		if (text.contains("TUT")) {
+		if (text.contains("TUT") || text.contains("LAB")) {
 			return createLab(text);
 		} else {
 			return createCourse(text);
@@ -261,6 +261,10 @@ public class Parser {
 			return this.partialAssignments.get(scheduledClass);
 		}
 		return null;
+	}
+	
+	public HashMap<ScheduledClass, Slot> getPartialAssignments(){
+		return partialAssignments;
 	}
 	
 }

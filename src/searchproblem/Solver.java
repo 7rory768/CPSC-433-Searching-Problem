@@ -2,6 +2,8 @@ package searchproblem;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import searchproblem.classes.*;
 
@@ -26,18 +28,28 @@ public class Solver{
         toBeScheduled.addAll(parser.getLabs());
         
         // TO-DO Need to decide the data structure that stores a partial assignment
-        // ArrayList<Pair> partialAssignments = parser.getPartialAssignments();
+        HashMap<ScheduledClass, Slot> partialAssignments = parser.getPartialAssignments();
         ArrayList<Node> partialSolution = new ArrayList<Node>();
         partialSolution.add(root);
+        int currentPenalty = 0;
         
-        // for(Pair pa : partialAssignments){
-        //     Node newNode = new Node();
-        //     //assign newNodes Slot and Course/Lab
-        //     // check if valid .. if not then hard constraints contradict each other .. return error msg
-        //     currentPenalty += evaluator.evaluate(partialSolution, newNode);
-        //     partialSolution.add(newNode)
-        //     // remove these classes / labs from toBeScheduled
-        // }
+        // iterate through partial assignments and make a node for each one
+        ArrayList<ScheduledClass> copy = new ArrayList<ScheduledClass>(parser.getCourses());
+        copy.addAll(parser.getLabs());
+        for(ScheduledClass sc : copy){
+        	Slot s = parser.getPartialAssignment(sc);
+        	if (s == null) continue;
+
+	    	System.out.println("See a partial assignmnet");
+	        Node newNode = new Node(s, sc, partialSolution.get((partialSolution.size()-1)));
+	        if (!validator.validate(newNode)){
+	        	System.out.println("Input requires a partial assignment that is not valid. Exiting.");
+	        	System.exit(1);
+	        }
+	        //currentPenalty += evaluator.evaluate(newNode);
+	        partialSolution.add(newNode);
+	        toBeScheduled.remove(sc);
+	     }
 
         // returns an empty list if no solution exists, check if empty after calling this
 	    bestSolution = depthFirstSolve(partialSolution, toBeScheduled);	
@@ -46,7 +58,8 @@ public class Solver{
             System.exit(0);
         }
         System.out.println("Found an assignment with penalty of: " + Integer.toString(minPenalty));
-		bestSolution = breadthFirstSolve(partialSolution, toBeScheduled, 0);
+        if (minPenalty == 0) System.exit(0);
+		bestSolution = breadthFirstSolve(partialSolution, toBeScheduled, currentPenalty);
         if(!bestSolution.isEmpty()){
             System.out.println("Found an assignment with penalty of: " + Integer.toString(minPenalty));
         }
