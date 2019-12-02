@@ -45,6 +45,7 @@ public class Solver{
             System.out.println("No solution found for this problem.");
             System.exit(0);
         }
+        System.out.println("Found an assignment with penalty of: " + Integer.toString(minPenalty));
 		bestSolution = breadthFirstSolve(partialSolution, toBeScheduled, 0);
         if(!bestSolution.isEmpty()){
             System.out.println("Found an assignment with penalty of: " + Integer.toString(minPenalty));
@@ -55,8 +56,9 @@ public class Solver{
         // basically don't use eval for this one, just want any solution
     	// TO-DO .. think about looking at preferred slots first and unpreferred slots last if performance bad
 
-        ScheduledClass current = toBeScheduled.get(0);
-        toBeScheduled.remove(0);
+    	ArrayList<ScheduledClass> toBeScheduled_copy = new ArrayList<ScheduledClass>(toBeScheduled);
+        ScheduledClass current = toBeScheduled_copy.get(0);
+        toBeScheduled_copy.remove(0);
 
         ArrayList<Slot> slots = (current instanceof Course) ? parser.getCourseSlots() : parser.getLabSlots();
         for(Slot s : slots){
@@ -64,14 +66,26 @@ public class Solver{
             if (!validator.validate(newNode)){
                 continue;
             }
-            if(toBeScheduled.isEmpty()){
+            
+            
+            
+            System.out.println(current.getDepartment() + " " + current.getCourseNum() + " " + current.getLectureNum() + " --> " + s.getDay() + " : " + s.getSlotTime());
+            if (current instanceof Course) {
+            	System.out.println("Course");
+            } else {
+            	System.out.println("Lab");
+            }
+            System.out.println(Integer.toString(solution.size()));
+            
+            
+            if(toBeScheduled_copy.isEmpty()){
                 System.out.println("Depth first search found a solution.");
                 solution.add(newNode);
                 return solution;
             } else {
                 solution.add(newNode);
                 // go down this branch
-                ArrayList<Node> temp = depthFirstSolve(solution, toBeScheduled);
+                ArrayList<Node> temp = depthFirstSolve(solution, toBeScheduled_copy);
                 if (!temp.isEmpty()){
                 // if solution found in this branch return it up the recursion
                     return temp;
@@ -82,6 +96,7 @@ public class Solver{
         }
         // if hasn't returned by this point no solution in this branch
         // return empty array list
+        System.out.println("depth search backtracking");
         return new ArrayList<Node>();
     }
 

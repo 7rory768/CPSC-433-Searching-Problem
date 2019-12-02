@@ -9,7 +9,7 @@ public class SearchProblemMain {
             System.out.println("Improper usage, include the name of the file that holds the department instance");
         } else {
 		fileName = args[1];*/
-		fileName = "deptinst1.txt";
+		fileName = "shortSample.txt";
 		File file = new File(fileName);
 		Parser parser = new Parser(file);
 		Solver solver = new Solver(parser);
