@@ -46,13 +46,14 @@ public class Solver{
 	        	System.out.println("Input requires a partial assignment that is not valid. Exiting.");
 	        	System.exit(1);
 	        }
-	        //currentPenalty += evaluator.evaluate(newNode);
+	        currentPenalty += evaluator.evaluate(newNode);
 	        partialSolution.add(newNode);
 	        toBeScheduled.remove(sc);
+	        System.out.println("tick");
 	     }
 
         // returns an empty list if no solution exists, check if empty after calling this
-	    bestSolution = depthFirstSolve(partialSolution, toBeScheduled);	
+	    bestSolution = depthFirstSolve(partialSolution, toBeScheduled, currentPenalty);	
         if(bestSolution.isEmpty()){
             System.out.println("No solution found for this problem.");
             System.exit(0);
@@ -65,7 +66,7 @@ public class Solver{
         }
     }
 
-    private ArrayList<Node> depthFirstSolve(ArrayList<Node> solution, ArrayList<ScheduledClass> toBeScheduled){
+    private ArrayList<Node> depthFirstSolve(ArrayList<Node> solution, ArrayList<ScheduledClass> toBeScheduled, int penalty){
         // basically don't use eval for this one, just want any solution
     	// TO-DO .. think about looking at preferred slots first and unpreferred slots last if performance bad
 
@@ -92,13 +93,15 @@ public class Solver{
             
             
             if(toBeScheduled_copy.isEmpty()){
+            	minPenalty = penalty + evaluator.evaluate(newNode);
                 System.out.println("Depth first search found a solution.");
                 solution.add(newNode);
                 return solution;
             } else {
                 solution.add(newNode);
+                penalty += evaluator.evaluate(newNode);
                 // go down this branch
-                ArrayList<Node> temp = depthFirstSolve(solution, toBeScheduled_copy);
+                ArrayList<Node> temp = depthFirstSolve(solution, toBeScheduled_copy, penalty);
                 if (!temp.isEmpty()){
                 // if solution found in this branch return it up the recursion
                     return temp;
