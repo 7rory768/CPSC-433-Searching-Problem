@@ -191,6 +191,10 @@ public class Parser {
 		return classPreferences;
 	}
 	
+	public HashMap<ScheduledClass, ArrayList<ScheduledClass>> getClassPairs(){
+		return preferredClassPairs;
+	}
+	
 	private Lab createLab(String text) {
 		String[] args = text.split("\\s");
 		String department = args[0];

@@ -1,20 +1,143 @@
 package searchproblem;
 
-import java.util.ArrayList;
 import java.util.*;
 
-import searchproblem.classes.ClassPreference;
-import searchproblem.classes.Course;
-import searchproblem.classes.Day;
-import searchproblem.classes.Lab;
-import searchproblem.classes.ScheduledClass;
-import searchproblem.classes.Slot;
+import searchproblem.classes.*;
 
 public class Evaluator {
 	Parser parser;
-	public Evaluator(Parser p) {
+	int minFillCoursePen;
+	int minFillTutPen;
+	int secOverlapPen;
+	int notPairedPen;
+
+	float weightMinFill;
+	float weightPref;
+	float weightPair;
+	float weightSecOverlap;
+	
+	public Evaluator(Parser p, int pen_labsmin, int pen_coursemin, int pen_notpaired, int pen_section, float wMF, float wPref, float wPair, float wSO) {
 		this.parser = p;
+		
+		this.minFillTutPen = pen_labsmin;
+		this.minFillCoursePen = pen_coursemin;
+		this.notPairedPen = pen_notpaired;
+		this.secOverlapPen = pen_section;	
+		
+		this.weightMinFill = wMF;
+		this.weightPref = wPref;
+		this.weightPair = wPair;
+		this.weightSecOverlap = wSO;		
 	}
+	
+	public float evaluateMinFill(Node assignment) {
+		if(weightMinFill == 0.0) return 0;
+		if(assignment.getCourse() == null && minFillCoursePen == 0) return 0;
+		if(assignment.getLab() == null && minFillTutPen == 0) return 0;
+
+		Slot s = assignment.getSlot();
+		// return the amount the penalty has been reduced, and subtract it from minfill penalty in Solver
+		if (s.getCurrentAssigned() > s.getMinCourses()) return 0;
+		
+		if(assignment.getCourse() == null) return weightMinFill*minFillTutPen;
+		return weightMinFill * minFillCoursePen;		
+	}
+	
+	public float evaluateSectionOverlap(Node assignment) {
+		if (this.weightSecOverlap == 0.0) return 0.0f;
+		ArrayList<ScheduledClass> classesInSameSlot = assignment.getSlot().scheduled;
+		int addedPenalty = 0;
+		ScheduledClass assignedClass = (assignment.getCourse() == null) ? assignment.getLab() : assignment.getCourse();
+		
+		for(ScheduledClass sc : classesInSameSlot) {
+			if (assignedClass.getDepartment() == sc.getDepartment() && assignedClass.getCourseNum() == sc.getCourseNum()) {
+				addedPenalty += this.secOverlapPen;
+			}
+		}
+		return addedPenalty * this.weightSecOverlap;
+	}
+	
+	public float evaluatePaired(Node assignment) {
+		ScheduledClass assignedClass = (assignment.getCourse() == null) ? assignment.getLab() : assignment.getCourse();
+		if(this.weightPair == 0.0) return 0.0f;
+		if(!parser.getClassPairs().containsKey(assignedClass)) return 0.0f;
+		ArrayList<ScheduledClass> paired = parser.getClassPairs().get(assignedClass);
+		ArrayList<ScheduledClass> classesInSameSlot = assignment.getSlot().scheduled;
+		int penaltyReduction = 0;
+		
+		for(ScheduledClass sc : classesInSameSlot) {
+			if (sc == assignedClass) continue;
+			if (paired.contains(sc)) {
+				penaltyReduction += this.notPairedPen;
+			}
+		}
+		return penaltyReduction * this.weightPair;
+	}
+	
+	public float evaluatePreferrance(Node assignment) {
+		if(this.weightPref == 0.0) return 0.0f;
+		ArrayList<ClassPreference> classPrefs = parser.getClassPreferences();
+		
+		for(ClassPreference cp : classPrefs) {
+			if ((cp.getScheduledClass() == assignment.getCourse() || cp.getScheduledClass() == assignment.getLab()) && cp.getSlot() == assignment.getSlot()) {
+				return cp.getWeight() * this.weightPref;
+			}
+		}
+		return 0.0f;
+	}
+	
+	
+	public float initializeMinFillPenalty() {
+		ArrayList<Slot> courseSlots = parser.getCourseSlots();
+		ArrayList<Slot> labSlots = parser.getLabSlots();
+		int penalty = 0;
+		
+		for (Slot s : courseSlots) {
+			penalty += s.getMinCourses() * this.minFillCoursePen;
+		}
+		for (Slot s : labSlots) {
+			penalty += s.getMinCourses() * this.minFillTutPen;
+		}
+		return penalty * weightMinFill;
+	}
+	
+	public float initializeNotPairedPenalty() {
+		HashMap<ScheduledClass, ArrayList<ScheduledClass>> classPairs =  (HashMap<ScheduledClass, ArrayList<ScheduledClass>>) parser.getClassPairs().clone();
+		HashMap<ScheduledClass, ScheduledClass> added = new HashMap<>();
+		int penalty = 0;
+		
+		for(Map.Entry<ScheduledClass, ArrayList<ScheduledClass>> entry : classPairs.entrySet()) {
+			for(ScheduledClass sc : entry.getValue()) {
+				if (added.containsKey(sc) && added.get(sc) == entry.getKey()) continue;
+				penalty += this.notPairedPen;
+				added.put(sc, entry.getKey());				
+			}
+		}
+		return penalty * weightPair;
+	}
+	
+	public float initializePreferrancePenalty() {
+		ArrayList<ClassPreference> classPrefs = parser.getClassPreferences();
+		int penalty = 0; 
+		
+		for (ClassPreference cp : classPrefs) {
+			penalty += cp.getWeight();
+		}
+		
+		return penalty * weightPref;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	public int evaluate(Node assignment) {
 		// return the penalty for this assignment
 
@@ -23,8 +146,9 @@ public class Evaluator {
 		Node current = assignment.getParent();
 		Node current2 = assignment.getParent();
 		Slot assignedSlot = assignment.getSlot();
-		Course assignedCourse = assignment.getCourse();
-		Lab assignedLab = assignment.getLab();
+		ScheduledClass item = (assignment.getCourse() != null) ? assignment.getCourse() : assignment.getLab();
+		//Course assignedCourse = assignment.getCourse();
+		//Lab assignedLab = assignment.getLab();
 	
 // finding penalty for min courses assignment
 // We putting all slots from assignment until root into ArrayList AssignedSlots  

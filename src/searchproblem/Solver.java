@@ -13,22 +13,26 @@ public class Solver{
     private final Evaluator evaluator;
     private final Validator validator;
     private int minPenalty = 0;
+    
+    private float minFilledPen;
+    private float notPairedPen;
+    private float preferredPen;
+    private float secOverlapPen = 0;
 	
-	public Solver(Parser parser) {
+	public Solver(Parser parser, Evaluator evaluator) {
 		this.parser = parser;
-        this.evaluator = new Evaluator(parser);
+        this.evaluator = evaluator;
         this.validator = new Validator(parser);
 	}
 
     public void solve(){
         Node root = new Node();
+        initializePenalties();
         ArrayList<Node> bestSolution = new ArrayList<Node>();
 
         ArrayList<ScheduledClass> toBeScheduled = new ArrayList<ScheduledClass>(parser.getCourses());
         toBeScheduled.addAll(parser.getLabs());
         
-        // TO-DO Need to decide the data structure that stores a partial assignment
-        HashMap<ScheduledClass, Slot> partialAssignments = parser.getPartialAssignments();
         ArrayList<Node> partialSolution = new ArrayList<Node>();
         partialSolution.add(root);
         int currentPenalty = 0;
@@ -46,7 +50,7 @@ public class Solver{
 	        	System.out.println("Input requires a partial assignment that is not valid. Exiting.");
 	        	System.exit(1);
 	        }
-	        currentPenalty += evaluator.evaluate(newNode);
+	        calculatePenalties(newNode);
 	        partialSolution.add(newNode);
 	        toBeScheduled.remove(sc);
 	        System.out.println("tick");
@@ -69,6 +73,9 @@ public class Solver{
     private ArrayList<Node> depthFirstSolve(ArrayList<Node> solution, ArrayList<ScheduledClass> toBeScheduled, int penalty){
         // basically don't use eval for this one, just want any solution
     	// TO-DO .. think about looking at preferred slots first and unpreferred slots last if performance bad
+    	
+    	// IF THIS COURSE HAS A PAIR ENTRY, NEED TO MAKE SURE IT'S PREFERRED SLOTS ARE FIRST !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    	// SHOULD SORT SLOTS SO ONES WITH HIGHER MINCOURSES/LABS COME FIRST
 
     	ArrayList<ScheduledClass> toBeScheduled_copy = new ArrayList<ScheduledClass>(toBeScheduled);
         ScheduledClass current = toBeScheduled_copy.get(0);
@@ -117,6 +124,9 @@ public class Solver{
     }
 
     private ArrayList<Node> breadthFirstSolve(ArrayList<Node> solution, ArrayList<ScheduledClass> toBeScheduled, int currPenalty){
+    	
+    	// IF THIS COURSE HAS A PAIR, NEED TO MAKE SURE IT'S PREFERRED SLOTS ARE FIRST !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
         ScheduledClass current = toBeScheduled.get(0);
 
         // so we don't mutate the list for nodes up higher in the tree
@@ -145,6 +155,7 @@ public class Solver{
             ArrayList<Node> temp = solution;
             penalty = n.getTotalPenalty();
             temp.add(n);
+            minFilledPen += evaluator.evaluateMinFill(n);
             if(toBeScheduled_copy.isEmpty()){
                 // this is a leaf node, and has found a new best
                 minPenalty = currPenalty + penalty;
@@ -158,5 +169,21 @@ public class Solver{
             }
         }
         return tentativeSolution;
-    }   
+    }
+    
+    private void initializePenalties() {
+    	minFilledPen = evaluator.initializeMinFillPenalty();
+    	notPairedPen = evaluator.initializeNotPairedPenalty();
+    	preferredPen = evaluator.initializePreferrancePenalty();
+    }
+
+    private void calculatePenalties(Node newNode) {
+    	minFilledPen -= evaluator.evaluateMinFill(newNode);
+    }
+
+    private float getTotalPenalty() {
+    	return minFilledPen + secOverlapPen + notPairedPen + preferredPen;
+    }
 }
+
+
