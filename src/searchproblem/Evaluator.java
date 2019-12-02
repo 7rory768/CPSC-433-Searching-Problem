@@ -66,26 +66,24 @@ public class Evaluator {
 		
 		while(current != null && (current.getCourse() != null || current.getLab() != null))
 		{
-			current2 = current.getParent();
+			
 			while(current2 != null && (current2.getCourse() != null || current2.getLab() != null))   
 			{
-				if (parser.isAPreferredPair(current.getCourse(), current2.getCourse()) && !current.getSlot().equals(current2.getSlot()) && current.getCourse()!= null && current2.getCourse()!=null)
+				if ( current.getCourse()!= null && current2.getCourse()!=null && parser.isAPreferredPair(current.getCourse(), current2.getCourse()) && !current.getSlot().equals(current2.getSlot()) )
 				{
 					penalty = penalty + 100;
-					                           // this is where mistake is courses ad labs have different slots
-				}                                                               // so need a function which check if they are ina same time
-				                                                                // need help here
-				if (parser.isAPreferredPair(current.getCourse(), current2.getLab()) && !atTheSameTime(current, current2) && current.getCourse()!= null && current2.getLab()!=null)
-				{
-					penalty = penalty + 100;
-					
-				}
-				if (parser.isAPreferredPair(current.getLab(), current2.getCourse()) && !atTheSameTime(current, current2) && current.getLab()!= null && current2.getCourse()!=null)
+				}	                           
+				if ( current.getCourse()!= null && current2.getLab()!=null && parser.isAPreferredPair(current.getCourse(), current2.getLab()) && !atTheSameTime(current, current2))
 				{
 					penalty = penalty + 100;
 					
 				}
-				if (parser.isAPreferredPair(current.getLab(), current2.getLab()) && !current.getSlot().equals(current2.getSlot()) && current.getLab()!= null && current2.getLab()!=null)
+				if (current.getLab()!= null && current2.getCourse()!=null && parser.isAPreferredPair(current.getLab(), current2.getCourse()) && !atTheSameTime(current, current2))
+				{
+					penalty = penalty + 100;
+					
+				}
+				if (current.getLab()!= null && current2.getLab()!=null && parser.isAPreferredPair(current.getLab(), current2.getLab()) && !current.getSlot().equals(current2.getSlot()))
 				{
 					penalty = penalty + 100;
 				
@@ -94,7 +92,7 @@ public class Evaluator {
 			}
 		   
 			current.getParent();
-		}
+		 }
 		
 		//now doing preferences here we just take assignment and check if it is in preferences if it is we compare preference slot
 		//with actual assignment if not same we add preference weight to assignment. then we do it with parent
