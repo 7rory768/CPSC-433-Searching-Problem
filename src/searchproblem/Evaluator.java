@@ -106,18 +106,7 @@ public class Evaluator {
 	}
 	
 	public float initializeNotPairedPenalty() {
-		HashMap<ScheduledClass, ArrayList<ScheduledClass>> classPairs =  (HashMap<ScheduledClass, ArrayList<ScheduledClass>>) parser.getClassPairs().clone();
-		HashMap<ScheduledClass, ScheduledClass> added = new HashMap<>();
-		int penalty = 0;
-		
-		for(Map.Entry<ScheduledClass, ArrayList<ScheduledClass>> entry : classPairs.entrySet()) {
-			for(ScheduledClass sc : entry.getValue()) {
-				if (added.containsKey(sc) && added.get(sc) == entry.getKey()) continue;
-				penalty += this.notPairedPen;
-				added.put(sc, entry.getKey());				
-			}
-		}
-		return penalty * weightPair;
+		return parser.getNumPairs() * weightPair;
 	}
 	
 	public float initializePreferrancePenalty() {

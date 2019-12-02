@@ -17,6 +17,7 @@ public class Parser {
 	private final ArrayList<ClassPreference> classPreferences = new ArrayList<ClassPreference>();
 	private final HashMap<ScheduledClass, Slot> partialAssignments = new HashMap<>();
 	private String name;
+	private int numPairs = 0;
 	
 	public Parser(File file) {
 		if (file.exists()) {
@@ -104,6 +105,7 @@ public class Parser {
 						this.classPreferences.add(new ClassPreference(scheduledClass, slot, weight));
 					} else if (parserSection == ParserSection.PAIRS) {
 						String args[] = line.split(",");
+						numPairs++;
 						ScheduledClass scheduledClass1 = getScheduledClass(args[0].trim()), scheduledClass2 = getScheduledClass(args[1].trim());
 						
 						if (this.preferredClassPairs.get(scheduledClass1) == null) {
@@ -277,6 +279,10 @@ public class Parser {
 	
 	public HashMap<ScheduledClass, Slot> getPartialAssignments(){
 		return partialAssignments;
+	}
+	
+	public int getNumPairs() {
+		return numPairs;
 	}
 	
 }

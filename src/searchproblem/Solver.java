@@ -29,6 +29,7 @@ public class Solver{
     public void solve(){
         Node root = new Node();
         initializePenalties();
+        //System.out.println("INIT SUB PEN: " + subtractingPenalties);
         ArrayList<Node> bestSolution = new ArrayList<Node>();
 
         ArrayList<ScheduledClass> toBeScheduled = new ArrayList<ScheduledClass>(parser.getCourses());
@@ -36,7 +37,6 @@ public class Solver{
         
         ArrayList<Node> partialSolution = new ArrayList<Node>();
         partialSolution.add(root);
-        int currentPenalty = 0;
         
         // iterate through partial assignments and make a node for each one
         ArrayList<ScheduledClass> copy = new ArrayList<ScheduledClass>(parser.getCourses());
@@ -78,6 +78,9 @@ public class Solver{
              	System.out.println("Lab");
              }
         }
+        System.out.println("SUB PEN: " + subtractingPenalties);
+        System.out.println("OTHER PEN: " + basePenalty);
+        
         
         // This just floors the number, might want to round it?
         minPenalty = (int) (basePenalty + subtractingPenalties);				
@@ -109,8 +112,12 @@ public class Solver{
         float subPenReduction = 0.0f;
         float basePenAddition = 0.0f;
         
-        ArrayList<Slot> slots = (current instanceof Course) ? parser.getCourseSlots() : parser.getLabSlots();
+        ArrayList<Slot> sls = (current instanceof Course) ? parser.getCourseSlots() : parser.getLabSlots();
+        ArrayList<Slot> slots = new ArrayList<>(sls);
+        
+        // need to custom sort
         Collections.sort(slots);
+        
         for(Slot s : slots){
             Node newNode = new Node(s, current, solution.get(solution.size()-1));
             if (!validator.validate(newNode)){
@@ -143,7 +150,6 @@ public class Solver{
         }
         // if hasn't returned by this point no solution in this branch
         // return empty array list
-        System.out.println("depth search backtracking");
         return new ArrayList<Node>();
     }
 
