@@ -37,7 +37,7 @@ public class Evaluator {
 
 		Slot s = assignment.getSlot();
 		// return the amount the penalty has been reduced, and subtract it from minfill penalty in Solver
-		if (s.getCurrentAssigned() > s.getMinCourses()) return 0;
+		if (s.scheduled.size() > s.getMinCourses()) return 0;
 		
 		if(assignment.getCourse() == null) return weightMinFill*minFillTutPen;
 		return weightMinFill * minFillCoursePen;		
@@ -48,9 +48,12 @@ public class Evaluator {
 		ArrayList<ScheduledClass> classesInSameSlot = assignment.getSlot().scheduled;
 		int addedPenalty = 0;
 		ScheduledClass assignedClass = (assignment.getCourse() == null) ? assignment.getLab() : assignment.getCourse();
+		if (assignedClass instanceof Lab) return 0.0f;
 		
+		//System.out.println("Num classes in same slot: " + classesInSameSlot.size());
 		for(ScheduledClass sc : classesInSameSlot) {
-			if (assignedClass.getDepartment() == sc.getDepartment() && assignedClass.getCourseNum() == sc.getCourseNum()) {
+			if (sc instanceof Lab) continue; // not sure if this is needed
+			if (assignedClass.getDepartment().equals(sc.getDepartment()) && assignedClass.getCourseNum() == sc.getCourseNum() && assignedClass.getLectureNum() != sc.getLectureNum()) {
 				addedPenalty += this.secOverlapPen;
 			}
 		}
@@ -98,6 +101,7 @@ public class Evaluator {
 		for (Slot s : labSlots) {
 			penalty += s.getMinCourses() * this.minFillTutPen;
 		}
+		System.out.println("MINFILL PEN : " + Float.toString(penalty*weightMinFill));
 		return penalty * weightMinFill;
 	}
 	

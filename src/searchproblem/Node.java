@@ -11,6 +11,10 @@ public class Node implements Comparable<Node>{
 	private int preferencePenalty; //penalty from the course in this node assigned to the slot in this node
 	private ArrayList<Node> children;
 	private Node parent;    // needed to backtrack if all children violate hard constraints
+	
+	// public for now just for easier prototyping
+	public float subPen;
+	public float basePen;
 
 	public Node(){
 		this.assigned_slot = null;

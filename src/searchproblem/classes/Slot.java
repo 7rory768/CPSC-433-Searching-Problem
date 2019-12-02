@@ -2,11 +2,12 @@ package searchproblem.classes;
 
 import java.util.ArrayList;
 
-public class Slot {
+import searchproblem.Node;
+
+public class Slot implements Comparable<Slot> {
 
     private final Day day;
     private final int slotTime; // Time represented by removing the : from the string (ex. 13:30 = 1330);
-    private int currentAssigned;
     private final int minCourses;
     private final int maxCourses;
     public ArrayList<ScheduledClass> scheduled = new ArrayList<>();
@@ -16,25 +17,12 @@ public class Slot {
     	this.slotTime = slotTime;
     	this.minCourses = minCourses;
     	this.maxCourses = maxCourses;
-    	this.currentAssigned = 0;
     }
 	
 	public Slot(Day day, int slotTime) {
 		this(day, slotTime, 0, Integer.MAX_VALUE);
 	}
 	
-	public int getCurrentAssigned() {
-		return currentAssigned;
-	}
-	
-	public void incCurrAssigned() {
-		currentAssigned++;
-	}
-	
-	public void decCurrAssigned() {
-		currentAssigned--;
-	}
-
 	public Day getDay() {
 		return day;
 	}
@@ -50,6 +38,15 @@ public class Slot {
 
 	public int getMaxCourses() {
 		return maxCourses;
+	}
+	
+	public int compareTo(Slot other_slot) {
+		if(this.scheduled.size() - this.minCourses == other_slot.scheduled.size() - other_slot.minCourses)
+			return 0;
+		else if (this.scheduled.size() - this.minCourses > other_slot.scheduled.size() - other_slot.minCourses)
+			return 1;
+		else
+			return -1;
 	}
     
     
