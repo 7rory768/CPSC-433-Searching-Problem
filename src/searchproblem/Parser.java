@@ -23,7 +23,9 @@ public class Parser {
 			try {
 				Scanner scanner = new Scanner(file);
 				ParserSection parserSection = ParserSection.NONE;
+				int lineNum = 0;
 				while (scanner.hasNextLine()) {
+					lineNum++;
 					String line = scanner.nextLine().trim();
 					if (line.equals("")) {
 						continue;
@@ -95,7 +97,9 @@ public class Parser {
 						} else {
 							slot = getLabSlot(day, slotTime);
 						}
-						
+						if (slot == null) {
+							System.out.println("Warning: Unknown time slot: " + args[1] + "," + args[2] + "(Line " + lineNum + ")");
+						}
 						int weight = Integer.valueOf(args[3].trim());
 						this.classPreferences.add(new ClassPreference(scheduledClass, slot, weight));
 					} else if (parserSection == ParserSection.PAIRS) {
@@ -123,6 +127,10 @@ public class Parser {
 							slot = this.getLabSlot(day, slotTime);
 						} else {
 							slot = this.getCourseSlot(day, slotTime);
+						}
+						if (slot == null) {
+							System.out.println("Error: Unknown time slot: " + args[1] + "," + args[2] + "(Line " + lineNum + ")");
+							System.exit(0);
 						}
 						this.partialAssignments.put(scheduledClass, slot);
 					}
@@ -196,7 +204,7 @@ public class Parser {
 	}
 	
 	private Lab createLab(String text) {
-		String[] args = text.split("\\s");
+		String[] args = text.split("\\s+");
 		String department = args[0];
 		int courseNum = Integer.valueOf(args[1]);
 		if (text.contains("LEC")) {
@@ -210,7 +218,7 @@ public class Parser {
 	}
 	
 	private Course createCourse(String text) {
-		String[] args = text.split("\\s");
+		String[] args = text.split("\\s+");
 		String department = args[0];
 		int courseNum = Integer.valueOf(args[1]), lectureNum = Integer.valueOf(args[3]);
 		return new Course(department, courseNum, lectureNum);
