@@ -10,7 +10,7 @@ public class Validator{
 	{
 		this.parser = parser;
 	}
-	
+
 	public boolean validate(Node assignment){
 		int slotCount = 1;
 		Node current = assignment.getParent();
@@ -18,7 +18,7 @@ public class Validator{
 		Course assignedCourse = assignment.getCourse();
 		Lab assignedLab = assignment.getLab();
 		ArrayList<ScheduledClass> conflicts = new ArrayList<>();
-				
+
 		boolean isCourse813 = (assignedCourse != null && assignedCourse.getDepartment().equals("CPSC") && assignedCourse.getCourseNum() == 813);
 		boolean isCourse913 = (assignedCourse != null && assignedCourse.getDepartment().equals("CPSC") && assignedCourse.getCourseNum() == 913);
 
@@ -78,6 +78,13 @@ public class Validator{
 
 		while(current != null && (current.getCourse() != null || current.getLab() != null))
 		{
+			if(current.getCourse() != null)	{
+				currentClass = current.getCourse();
+			}
+			else {
+				currentClass = current.getLab();
+			}
+
 			if(current.getCourse() != null && assignedCourse != null
 					&& current.getSlot() == assignedSlot 
 					&& current.getCourse().getCourseNum() / 100 == 5 && assignedCourse.getCourseNum() / 100 == 5 
@@ -85,37 +92,36 @@ public class Validator{
 				return false;
 			}
 
-			if((current.getLab() != null && assignment.getCourse() != null))	{
-				if(current.getLab().getDepartment().equals(assignment.getCourse().getDepartment()) 
-						&& (current.getLab().getCourseNum() == assignment.getCourse().getCourseNum()))
-				{
-					if(isOverlap(current, assignment))
+			if(isOverlap(current, assignment))
+			{
+				if((current.getLab() != null && assignment.getCourse() != null))	{
+					if(current.getLab().getDepartment().equals(assignment.getCourse().getDepartment()) 
+							&& (current.getLab().getCourseNum() == assignment.getCourse().getCourseNum()))
+					{
 						if(current.getLab().getLectureNum() == 0)
 							return false;
-						else if(current.getLab().getLectureNum() == assignment.getCourse().getLectureNum())
+						if(current.getLab().getLectureNum() == assignment.getCourse().getLectureNum())
 							return false;
+					}
 				}
-			}
-			if((assignment.getLab() != null && current.getCourse() != null))
-				if(assignment.getLab().getDepartment().equals(current.getCourse().getDepartment()) 
-						&& (assignment.getLab().getCourseNum() == current.getCourse().getCourseNum()))
-				{
-					if(isOverlap(current, assignment))
+				if((assignment.getLab() != null && current.getCourse() != null))
+					if(assignment.getLab().getDepartment().equals(current.getCourse().getDepartment()) 
+							&& (assignment.getLab().getCourseNum() == current.getCourse().getCourseNum()))
+					{
 						if(assignment.getLab().getLectureNum() == 0)
 							return false;
-						else if(assignment.getLab().getLectureNum() == current.getCourse().getLectureNum())
+						if(assignment.getLab().getLectureNum() == current.getCourse().getLectureNum())
 							return false;
+					}
+				if( parser.areClassesIncompatible(currentClass, assignedClass)){	
+					return false;
 				}
-			
+			}
+
+
 			if(current.getSlot() == assignedSlot)
 				slotCount++;
 
-			if(current.getCourse() != null)	{
-				currentClass = current.getCourse();
-			}
-			else {
-				currentClass = current.getLab();
-			}
 
 			if(isCourse813)
 			{
@@ -138,10 +144,7 @@ public class Validator{
 				}
 			}
 
-			if( isOverlap(assignment, current)
-					&& ( parser.areClassesIncompatible(currentClass, assignedClass))){	
-				return false;
-			}
+
 			current = current.getParent();
 
 
@@ -149,10 +152,10 @@ public class Validator{
 
 		if(slotCount > assignedSlot.getMaxCourses())
 			return false; 
-		
+
 		return true;
 	}
-	
+
 
 	private boolean isOverlap(Node a, Node b){
 
@@ -162,9 +165,11 @@ public class Validator{
 			if( ( (a.getSlot().getDay() == Day.MONDAY || a.getSlot().getDay() == Day.FRIDAY) && b.getSlot().getDay() == Day.MONDAY )
 					|| (a.getSlot().getDay() == Day.TUESDAY  && b.getSlot().getDay() == Day.TUESDAY) ) 
 			{
+				if (a.getSlot().getSlotTime() == b.getSlot().getSlotTime())
+					return true;
+
 				if((a.getSlot().getSlotTime() < getEndTime(b.getSlot(), false) && getEndTime(b.getSlot(), false) - a.getSlot().getSlotTime() < 50 )|| 
 						(b.getSlot().getSlotTime() < getEndTime(a.getSlot(), true) && getEndTime(a.getSlot(), true) - b.getSlot().getSlotTime() < 50)){
-
 					return true;
 
 				}	
@@ -175,15 +180,18 @@ public class Validator{
 			if( a.getSlot().getDay() == Day.MONDAY  && (b.getSlot().getDay() == Day.MONDAY || b.getSlot().getDay() == Day.FRIDAY) ||
 					(a.getSlot().getDay() == Day.TUESDAY  && b.getSlot().getDay() == Day.TUESDAY)) 
 			{
+				if (a.getSlot().getSlotTime() == b.getSlot().getSlotTime())
+					return true;
+
 				if((a.getSlot().getSlotTime() < getEndTime(b.getSlot(), true) && getEndTime(b.getSlot(), true) - a.getSlot().getSlotTime() < 50 )|| 
 						(b.getSlot().getSlotTime() < getEndTime(a.getSlot(), false) && getEndTime(a.getSlot(), false) - b.getSlot().getSlotTime() < 50)){
 
 					return true;
-				 
+
 				}
 			}
 		}
-		
+
 		if((a.getCourse() != null && b.getCourse() != null) || (a.getLab() != null && b.getLab() != null))
 		{
 			return (a.getSlot().getSlotTime() == b.getSlot().getSlotTime() && a.getSlot().getDay() == b.getSlot().getDay());
