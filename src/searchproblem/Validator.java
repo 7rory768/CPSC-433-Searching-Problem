@@ -46,19 +46,20 @@ public class Validator{
 			{
 				return false;
 			}
+			for(Course c: parser.getCourses())
+			{
+				if((c.getDepartment() == "CPSC" && c.getCourseNum() == 313))
+					return false;
+			}
+			for(Lab l: parser.getLabs())
+			{
+				if((l.getDepartment() == "CPSC" && l.getCourseNum() == 313))
+					return false;
+			}
 		}
 
 		
-		for(Course c: parser.getCourses())
-		{
-			if((c.getDepartment() == "CPSC" && c.getCourseNum() == 313 || c.getDepartment() == "CPSC" && c.getCourseNum() == 413))
-				conflicts.add(c);
-		}
-		for(Lab l: parser.getLabs())
-		{
-			if((l.getDepartment() == "CPSC" && l.getCourseNum() == 313) || (l.getDepartment() == "CPSC" && l.getCourseNum() == 413))
-				conflicts.add(l);
-		}
+		
 		
 		if(isCourse913)
 		{
@@ -66,7 +67,16 @@ public class Validator{
 			{
 				return false;
 			}
-
+			for(Course c: parser.getCourses())
+			{
+				if((c.getDepartment() == "CPSC" && c.getCourseNum() == 413))
+					return false;
+			}
+			for(Lab l: parser.getLabs())
+			{
+				if((l.getDepartment() == "CPSC" && l.getCourseNum() == 413))
+					return false;
+			}
 		}
 
 		while(current != null && (current.getCourse() != null || current.getLab() != null))
@@ -84,20 +94,6 @@ public class Validator{
 					&& current.getCourse().getCourseNum() / 100 == 5 && assignedCourse.getCourseNum() / 100 == 5 
 					&& current.getCourse().getDepartment().equals(assignedCourse.getDepartment())) {
 				return false;
-			}
-
-			for(ScheduledClass s: conflicts)
-			{
-				if(parser.areClassesIncompatible(s, assignedClass))
-				{
-					System.out.println("TICK");
-					if(assignedSlot.getDay() == Day.TUESDAY && 
-							(assignedSlot.getSlotTime() >= 1800 && assignedSlot.getSlotTime() <= 1900))
-						if(assignedClass instanceof Lab && getEndTime(assignedSlot, true) > 1800 && getEndTime(assignedSlot, true) <= 1900)
-							return false;
-						else if(getEndTime(assignedSlot, false) > 1800 && getEndTime(assignedSlot, false) <= 1900)
-							return false;
-				}
 			}
 			
 			if(isOverlap(current, assignment))
