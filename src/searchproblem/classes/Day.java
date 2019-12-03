@@ -19,5 +19,9 @@ public enum Day {
 		return null;
 	}
 	
+	public String getDayID() {
+		return dayID;
+	}
+	
 
 }

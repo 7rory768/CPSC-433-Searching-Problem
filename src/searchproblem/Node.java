@@ -193,13 +193,18 @@ public class Node implements Comparable<Node>{
 	}
 
 	public String toString() {
-		String s = "";
-		if(this.course != null)	
-			s += "Course " + this.course.getDepartment() + " " + this.course.getCourseNum() + " LEC " + this.course.getLectureNum()
-			 + " ASSIGNED TO " + this.assigned_slot.getDay() + " AT " + this.assigned_slot.getSlotTime()/100 + ":" + this.assigned_slot.getSlotTime()%100/10 + 0;
-		else if (this.lab != null)
-			s += "Lab " + this.lab.getDepartment() + " " + this.lab.getCourseNum() + " LEC " + this.lab.getLectureNum() + " TUT " + this.lab.getTutorialNum()
-			 + " ASSIGNED TO " + this.assigned_slot.getDay() + " AT " + this.assigned_slot.getSlotTime()/100 + ":" + this.assigned_slot.getSlotTime()%100/10 + 0;
-		return s;
+		String s1 = "";
+		String s2 = "";
+		String s3 = "";
+		if(this.course != null) {
+			s1 += this.course.getDepartment() + " " + this.course.getCourseNum() + " LEC " + this.course.getLectureNum();
+			s2 += ": " + this.assigned_slot.getDay().getDayID() + ", ";
+			s3 += this.assigned_slot.getSlotTime()/100 + ":" + this.assigned_slot.getSlotTime()%100/10 + 0;
+		} else if (this.lab != null) {
+			s1 += this.lab.getDepartment() + " " + this.lab.getCourseNum() + " LEC " + this.lab.getLectureNum() + " TUT " + this.lab.getTutorialNum();
+			s2 += ": " + this.assigned_slot.getDay().getDayID() + ", ";
+			s3 += this.assigned_slot.getSlotTime()/100 + ":" + this.assigned_slot.getSlotTime()%100/10 + 0;
+		}
+		return String.format("%-30s %-4s %6s", s1, s2, s3);
 	}
 }

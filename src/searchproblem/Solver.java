@@ -39,7 +39,7 @@ public class Solver{
         
         ArrayList<Node> partialSolution = new ArrayList<Node>();
         partialSolution.add(root);
-        
+        System.out.println("Number of courses/labs to schedule: " + toBeScheduled.size());
           
         // iterate through partial assignments and make a node for each one
         ArrayList<ScheduledClass> copy = new ArrayList<ScheduledClass>(parser.getCourses());
@@ -63,7 +63,7 @@ public class Solver{
         subtractingPenalties = originalSubPen;
         basePenalty = originalBasePen;
         
-        System.out.println("LEFT TO SCHED: " + toBeScheduled.size());
+        
         
         
         
@@ -96,19 +96,20 @@ public class Solver{
     		System.exit(1);
     	}
     	bestSolution.remove(0); // remove root
+    	
+    	System.out.println("\n\nEval-value: " + minPenalty);
+    	
+    	
+    	ArrayList<String> assignments = new ArrayList<>();
         for(Node n : bestSolution) {
-        	ScheduledClass current = (n.getCourse() == null) ? n.getLab() : n.getCourse();
-        	Slot s = n.getSlot();
-        	
-        	 System.out.println(current.getDepartment() + " " + current.getCourseNum() + " " + current.getLectureNum() + " --> " + s.getDay() + " : " + s.getSlotTime());
-             if (current instanceof Course) {
-             	System.out.println("Course");
-             } else {
-            	Lab curr = (Lab) current;
-             	System.out.println("Lab " + curr.getTutorialNum());
-             }
+        	assignments.add(n.toString());
         }
-        System.out.println("MINPENALTY: " + minPenalty);
+        assignments.sort(String::compareToIgnoreCase);
+        
+        for (String a : assignments) {
+        	System.out.println(a);
+        }
+        
         System.exit(0);
     }
 
