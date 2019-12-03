@@ -4,6 +4,7 @@ import java.io.File;
 
 public class SearchProblemMain {
 	public static void main(String[] args) {
+		/*
 		String fileName = "";
 		int minfillCoursePen = 1, minfillTutPen = 1, secOverlapPen = 1, notPairedPen = 1;
 		float weightMinfill = 1.0f, weightPref = 1.0f, weightPair = 1.0f, weightSecOverlap = 1.0f;
@@ -30,11 +31,11 @@ public class SearchProblemMain {
         	System.out.println("Trouble parsing command line arguments, check the README for usage.");
         	System.exit(1);
         }
-		
+		*/
 		
 		
 		// -----------------------------------  HARD CODE -----------------------------------
-		/*String fileName = "gehtnicht10.txt";
+		String fileName = "shortSampleFixed.txt";
 		int minfillCoursePen = 1;
 		int minfillTutPen = 1;
 		int secOverlapPen = 1;
@@ -44,7 +45,7 @@ public class SearchProblemMain {
 		float weightPref = 1.0f;
 		float weightPair = 1.0f;
 		float weightSecOverlap = 1.0f;	
-		*/
+		
 		
 		
 		File file = new File(fileName);
