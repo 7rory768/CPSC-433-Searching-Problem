@@ -38,7 +38,6 @@ public class Evaluator {
 		Slot s = assignment.getSlot();
 		// return the amount the penalty has been reduced, and subtract it from minfill penalty in Solver
 		if (s.scheduled.size() > s.getMinCourses()) return 0;
-		
 		if(assignment.getCourse() == null) return weightMinFill*minFillTutPen;
 		return weightMinFill * minFillCoursePen;		
 	}
@@ -101,7 +100,6 @@ public class Evaluator {
 		for (Slot s : labSlots) {
 			penalty += s.getMinCourses() * this.minFillTutPen;
 		}
-		System.out.println("MINFILL PEN : " + Float.toString(penalty*weightMinFill));
 		return penalty * weightMinFill;
 	}
 	

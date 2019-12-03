@@ -24,7 +24,7 @@ public class SearchProblemMain {
 		
 		
 		// ----------------------------------- TEMPORARILY HARD CODE -----------------------------------
-		String fileName = "shortSample.txt";
+		String fileName = "partialAssignments.txt";
 		int minfillCoursePen = 1;
 		int minfillTutPen = 1;
 		int secOverlapPen = 1;

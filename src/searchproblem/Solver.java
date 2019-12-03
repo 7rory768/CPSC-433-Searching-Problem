@@ -19,6 +19,8 @@ public class Solver{
     
     private float originalSubPen;
     private float originalBasePen;
+    
+    private boolean zeroFound = false;
 	
 	public Solver(Parser parser, Evaluator evaluator) {
 		this.parser = parser;
@@ -29,7 +31,6 @@ public class Solver{
     public void solve(){
         Node root = new Node();
         initializePenalties();
-        System.out.println("INIT SUB PEN: " + subtractingPenalties);
         ArrayList<Node> bestSolution = new ArrayList<Node>();
 
         ArrayList<ScheduledClass> toBeScheduled = new ArrayList<ScheduledClass>(parser.getCourses());
@@ -38,6 +39,7 @@ public class Solver{
         ArrayList<Node> partialSolution = new ArrayList<Node>();
         partialSolution.add(root);
         
+          
         // iterate through partial assignments and make a node for each one
         ArrayList<ScheduledClass> copy = new ArrayList<ScheduledClass>(parser.getCourses());
         copy.addAll(parser.getLabs());
@@ -59,28 +61,12 @@ public class Solver{
 	     }
         subtractingPenalties = originalSubPen;
         basePenalty = originalBasePen;
-
-        // returns an empty list if no solution exists, check if empty after calling this
+        
+        
+        
 	    bestSolution = depthFirstSolve(partialSolution, toBeScheduled);	
-        if(bestSolution.isEmpty()){
-            System.out.println("No solution found for this problem.");
-            System.exit(0);
-        }
-        
-        bestSolution.remove(0); // remove root
-        for(Node n : bestSolution) {
-        	ScheduledClass current = (n.getCourse() == null) ? n.getLab() : n.getCourse();
-        	Slot s = n.getSlot();
-        	 System.out.println(current.getDepartment() + " " + current.getCourseNum() + " " + current.getLectureNum() + " --> " + s.getDay() + " : " + s.getSlotTime());
-             if (current instanceof Course) {
-             	System.out.println("Course");
-             } else {
-             	System.out.println("Lab");
-             }
-        }
-        System.out.println("SUB PEN: " + subtractingPenalties);
-        System.out.println("OTHER PEN: " + basePenalty);
-        
+               
+        // Clear slots
         for (Slot s : parser.getCourseSlots()) {
         	s.scheduled.clear();
         }
@@ -88,32 +74,38 @@ public class Solver{
         	s.scheduled.clear();
         }
         
-        
-        // This just floors the number, might want to round it?
-        minPenalty = (int) (basePenalty + subtractingPenalties);				
-        System.out.println("Found an assignment with penalty of: " + Integer.toString(minPenalty));
-        if (basePenalty + subtractingPenalties == 0.0) System.exit(0);
+        if (minPenalty == 0) output(bestSolution);
         
         basePenalty = originalBasePen;
         subtractingPenalties = originalSubPen;
-
-		bestSolution = breadthFirstSolve(partialSolution, toBeScheduled);
-        if(!bestSolution.isEmpty()){           
-            
-            
-            bestSolution.remove(0); // remove root
-            for(Node n : bestSolution) {
-            	ScheduledClass current = (n.getCourse() == null) ? n.getLab() : n.getCourse();
-            	Slot s = n.getSlot();
-            	 System.out.println(current.getDepartment() + " " + current.getCourseNum() + " " + current.getLectureNum() + " --> " + s.getDay() + " : " + s.getSlotTime());
-                 if (current instanceof Course) {
-                 	System.out.println("Course");
-                 } else {
-                 	System.out.println("Lab");
-                 }
-            }
-            System.out.println("MINPENALTY: " + minPenalty);
+        
+		partialSolution = breadthFirstSolve(partialSolution, toBeScheduled);
+        if(!partialSolution.isEmpty()){
+            bestSolution = partialSolution;            
         }
+        output(bestSolution);
+    }
+    
+    
+    private void output(ArrayList<Node> bestSolution) {
+    	if (bestSolution.isEmpty()) {
+    		System.out.println("No Solution found for this input");
+    		System.exit(1);
+    	}
+    	bestSolution.remove(0); // remove root
+        for(Node n : bestSolution) {
+        	ScheduledClass current = (n.getCourse() == null) ? n.getLab() : n.getCourse();
+        	Slot s = n.getSlot();
+        	
+        	 System.out.println(current.getDepartment() + " " + current.getCourseNum() + " " + current.getLectureNum() + " --> " + s.getDay() + " : " + s.getSlotTime());
+             if (current instanceof Course) {
+             	System.out.println("Course");
+             } else {
+             	System.out.println("Lab");
+             }
+        }
+        System.out.println("MINPENALTY: " + minPenalty);
+        System.exit(0);
     }
 
     
@@ -154,6 +146,7 @@ public class Solver{
    
             if(toBeScheduled_copy.isEmpty()){
                 System.out.println("Depth first search found a solution.");
+                minPenalty = (int) (basePenalty + subtractingPenalties);
                 return solution_copy;
             } else {
                 // go down this branch
@@ -192,22 +185,23 @@ public class Solver{
         float subPenReduction = 0;
         float basePenAddition = 0;
         
-        
         for(Slot s : slots){
             Node newNode = new Node(s, current, solution.get(solution.size()-1));
             if (!validator.validate(newNode)){
                 continue;
             }
             
+            s.scheduled.add(current);
             subPenReduction = calcSubtractingPenalties(newNode);
             basePenAddition = evaluator.evaluateSectionOverlap(newNode);
+            s.scheduled.remove(s.scheduled.size()-1);
 
-            if(basePenalty + basePenAddition >= minPenalty){
+            if(basePenalty + basePenAddition >= minPenalty && minPenalty != 0){
                 continue;
             }
             newNode.subPen = subPenReduction;
             newNode.basePen = basePenAddition;
-            newNode.setTotalPenalty((int) (subPenReduction*-1 + basePenAddition));
+            newNode.setTotalPenalty((int) (subPenReduction * -1 + basePenAddition));
             orderedBestChildren.add(newNode);
         }
         Collections.sort(orderedBestChildren);
@@ -225,8 +219,12 @@ public class Solver{
 
             if(toBeScheduled_copy.isEmpty()){
                 // this is a leaf node, check if it's solution is better
-            	if (basePenalty + subtractingPenalties < minPenalty) {
+            	if (basePenalty + subtractingPenalties < minPenalty || minPenalty == 0) {
             		minPenalty = (int) (basePenalty + subtractingPenalties);
+            		if (minPenalty == 0) zeroFound = true;
+            		basePenalty -= n.basePen;
+                    subtractingPenalties += n.subPen;
+                    s.scheduled.remove(s.scheduled.size()-1);
             		System.out.println("Found Solution with: " + minPenalty);
             		return temp;
             	} else {
@@ -240,6 +238,9 @@ public class Solver{
                 if(!temp.isEmpty()){
                     // will only be not empty if a better solution was found
                     tentativeSolution = temp;
+                    if(zeroFound) {
+                    	return tentativeSolution;
+                    }
                 }
             }
             
