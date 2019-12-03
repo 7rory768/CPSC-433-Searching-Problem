@@ -1,0 +1,6 @@
+oneSolution = 0
+incompatabilities = 0
+manySolutions = 6
+partialAssignments = 2
+preferences = 20
+shortSample = 22
