@@ -33,8 +33,9 @@ public class Solver{
         initializePenalties();
         ArrayList<Node> bestSolution = new ArrayList<Node>();
 
-        ArrayList<ScheduledClass> toBeScheduled = new ArrayList<ScheduledClass>(parser.getCourses());
-        toBeScheduled.addAll(parser.getLabs());
+        ArrayList<ScheduledClass> toBeScheduled = sortCourses(new ArrayList<ScheduledClass>(parser.getCourses()), new ArrayList<ScheduledClass>(parser.getLabs()));
+        //new ArrayList<ScheduledClass>(parser.getCourses());
+        //toBeScheduled.addAll(parser.getLabs());
         
         ArrayList<Node> partialSolution = new ArrayList<Node>();
         partialSolution.add(root);
@@ -61,6 +62,8 @@ public class Solver{
 	     }
         subtractingPenalties = originalSubPen;
         basePenalty = originalBasePen;
+        
+        System.out.println("LEFT TO SCHED: " + toBeScheduled.size());
         
         
         
@@ -101,7 +104,8 @@ public class Solver{
              if (current instanceof Course) {
              	System.out.println("Course");
              } else {
-             	System.out.println("Lab");
+            	Lab curr = (Lab) current;
+             	System.out.println("Lab " + curr.getTutorialNum());
              }
         }
         System.out.println("MINPENALTY: " + minPenalty);
@@ -117,7 +121,9 @@ public class Solver{
     	
     	// IF THIS COURSE HAS A PAIR ENTRY, NEED TO MAKE SURE IT'S PREFERRED SLOTS ARE FIRST !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     	// SHOULD SORT SLOTS SO ONES WITH HIGHER MINCOURSES/LABS COME FIRST
-
+    	
+    	
+    	
     	ArrayList<ScheduledClass> toBeScheduled_copy = new ArrayList<ScheduledClass>(toBeScheduled);
     	ArrayList<Node> solution_copy = new ArrayList<Node>(solution);
         ScheduledClass current = toBeScheduled_copy.get(0);
@@ -130,6 +136,7 @@ public class Solver{
         
         // need to custom sort
         Collections.sort(slots);
+        slots = sortSlots(slots, current);
         
         for(Slot s : slots){
             Node newNode = new Node(s, current, solution_copy.get(solution_copy.size()-1));
@@ -172,7 +179,6 @@ public class Solver{
     
     
     private ArrayList<Node> breadthFirstSolve(ArrayList<Node> solution, ArrayList<ScheduledClass> toBeScheduled){
-    	
         ScheduledClass current = toBeScheduled.get(0);
 
         // so we don't mutate the list for nodes up higher in the tree
@@ -252,7 +258,46 @@ public class Solver{
     }
     
     
+    private ArrayList<Slot> sortSlots(ArrayList<Slot> slots, ScheduledClass sc) {
+    	// already sorted by which ones have higher gaps between current and minimum assigned
+    	// order so most preferred ones are first
+    	ArrayList<Slot> order = new ArrayList<>();
+    	ArrayList<ClassPreference> classPrefs = parser.getClassPreferences();
+    	
+    	// can order by weight for further improvements
+    	for (ClassPreference cp : classPrefs) {
+    		if(cp.getScheduledClass() == sc) {
+    			order.add(cp.getSlot());
+    			slots.remove(cp.getSlot());
+    		}
+    	}
+    	
+    	for(Slot s : slots) {
+    		order.add(s);
+    	}
+    	return order;
+    	
+    }
     
+    private ArrayList<ScheduledClass> sortCourses(ArrayList<ScheduledClass> courses, ArrayList<ScheduledClass> labs) {
+    	ArrayList<ScheduledClass> order = new ArrayList<>();
+    	ArrayList<ScheduledClass> toRemove = new ArrayList<>();
+    	
+    	for (ScheduledClass course : courses) {
+    		order.add(course);
+    		for (ScheduledClass lab : labs) {
+    			if (lab.getDepartment().contentEquals(course.getDepartment()) && lab.getCourseNum() == course.getCourseNum()) {
+    				order.add(lab);
+    				toRemove.add(lab);
+    			}
+    		}
+    		
+    		for(ScheduledClass r : toRemove) {
+    			labs.remove(r);
+    		}
+    	}
+    	return order;
+    }
     
     private void initializePenalties() {
     	subtractingPenalties = evaluator.initializeMinFillPenalty() + evaluator.initializeNotPairedPenalty()
