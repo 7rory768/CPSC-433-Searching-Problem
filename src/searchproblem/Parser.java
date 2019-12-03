@@ -223,6 +223,12 @@ public class Parser {
 		String[] args = text.split("\\s+");
 		String department = args[0];
 		int courseNum = Integer.valueOf(args[1]), lectureNum = Integer.valueOf(args[3]);
+		
+		if (department.equals("CPSC") && courseNum == 313) {
+			courses.add(new Course("CPSC", 813, 1));
+		} else if (department.equals("CPSC") && courseNum == 413) {
+			courses.add(new Course("CPSC", 913, 1));
+		}
 		return new Course(department, courseNum, lectureNum);
 	}
 	

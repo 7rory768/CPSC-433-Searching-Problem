@@ -285,6 +285,15 @@ public class Solver{
     	ArrayList<ScheduledClass> toRemove = new ArrayList<>();
     	
     	for (ScheduledClass course : courses) {
+    		if (course.getDepartment().equals("CPSC") && (course.getCourseNum() == 813 || course.getCourseNum() == 913)) {
+    			order.add(course);
+    			toRemove.add(course);
+    		}
+    	}
+    	for(ScheduledClass r : toRemove) {
+			courses.remove(r);
+		}
+    	for (ScheduledClass course : courses) {
     		order.add(course);
     		for (ScheduledClass lab : labs) {
     			if (lab.getDepartment().contentEquals(course.getDepartment()) && lab.getCourseNum() == course.getCourseNum()) {

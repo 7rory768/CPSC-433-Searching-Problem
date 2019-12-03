@@ -34,17 +34,17 @@ public class SearchProblemMain {
 		
 		
 		// -----------------------------------  HARD CODE -----------------------------------
-//		String fileName = "manySolutions.txt";
-//		int minfillCoursePen = 1;
-//		int minfillTutPen = 1;
-//		int secOverlapPen = 1;
-//		int notPairedPen = 1;
-//
-//		float weightMinfill = 1.0f;
-//		float weightPref = 1.0f;
-//		float weightPair = 1.0f;
-//		float weightSecOverlap = 1.0f;	
-		
+		/*String fileName = "gehtnicht10.txt";
+		int minfillCoursePen = 1;
+		int minfillTutPen = 1;
+		int secOverlapPen = 1;
+		int notPairedPen = 1;
+
+		float weightMinfill = 1.0f;
+		float weightPref = 1.0f;
+		float weightPair = 1.0f;
+		float weightSecOverlap = 1.0f;	
+		*/
 		
 		
 		File file = new File(fileName);

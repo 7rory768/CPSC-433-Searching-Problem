@@ -19,6 +19,7 @@ public class Validator{
 		Lab assignedLab = assignment.getLab();
 		ArrayList<ScheduledClass> conflicts = new ArrayList<>();
 
+		
 		boolean isCourse813 = (assignedCourse != null && assignedCourse.getDepartment().equals("CPSC") && assignedCourse.getCourseNum() == 813);
 		boolean isCourse913 = (assignedCourse != null && assignedCourse.getDepartment().equals("CPSC") && assignedCourse.getCourseNum() == 913);
 
@@ -45,39 +46,32 @@ public class Validator{
 			{
 				return false;
 			}
-			for(Course c: parser.getCourses())
-			{
-				if(c.getDepartment() == "CPSC" && c.getCourseNum() == 313)
-					conflicts.add(c);
-			}
-			for(Lab l: parser.getLabs())
-			{
-				if(l.getDepartment() == "CPSC" && l.getCourseNum() == 313)
-					conflicts.add(l);
-			}
 		}
 
+		
+		for(Course c: parser.getCourses())
+		{
+			if((c.getDepartment() == "CPSC" && c.getCourseNum() == 313 || c.getDepartment() == "CPSC" && c.getCourseNum() == 413))
+				conflicts.add(c);
+		}
+		for(Lab l: parser.getLabs())
+		{
+			if((l.getDepartment() == "CPSC" && l.getCourseNum() == 313) || (l.getDepartment() == "CPSC" && l.getCourseNum() == 413))
+				conflicts.add(l);
+		}
+		
 		if(isCourse913)
 		{
 			if(!(assignedSlot.getDay() == Day.TUESDAY && assignedSlot.getSlotTime() >= 1800))
 			{
 				return false;
 			}
-			for(Course c: parser.getCourses())
-			{
-				if(c.getDepartment() == "CPSC" && c.getCourseNum() == 413)
-					conflicts.add(c);
-			}
-			for(Lab l: parser.getLabs())
-			{
-				if(l.getDepartment() == "CPSC" && l.getCourseNum() == 413)
-					conflicts.add(l);
-			}
 
 		}
 
 		while(current != null && (current.getCourse() != null || current.getLab() != null))
 		{
+			
 			if(current.getCourse() != null)	{
 				currentClass = current.getCourse();
 			}
@@ -92,6 +86,20 @@ public class Validator{
 				return false;
 			}
 
+			for(ScheduledClass s: conflicts)
+			{
+				if(parser.areClassesIncompatible(s, assignedClass))
+				{
+					System.out.println("TICK");
+					if(assignedSlot.getDay() == Day.TUESDAY && 
+							(assignedSlot.getSlotTime() >= 1800 && assignedSlot.getSlotTime() <= 1900))
+						if(assignedClass instanceof Lab && getEndTime(assignedSlot, true) > 1800 && getEndTime(assignedSlot, true) <= 1900)
+							return false;
+						else if(getEndTime(assignedSlot, false) > 1800 && getEndTime(assignedSlot, false) <= 1900)
+							return false;
+				}
+			}
+			
 			if(isOverlap(current, assignment))
 			{
 				if((current.getLab() != null && assignment.getCourse() != null))	{
