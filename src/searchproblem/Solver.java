@@ -29,7 +29,7 @@ public class Solver{
     public void solve(){
         Node root = new Node();
         initializePenalties();
-        //System.out.println("INIT SUB PEN: " + subtractingPenalties);
+        System.out.println("INIT SUB PEN: " + subtractingPenalties);
         ArrayList<Node> bestSolution = new ArrayList<Node>();
 
         ArrayList<ScheduledClass> toBeScheduled = new ArrayList<ScheduledClass>(parser.getCourses());
@@ -81,6 +81,13 @@ public class Solver{
         System.out.println("SUB PEN: " + subtractingPenalties);
         System.out.println("OTHER PEN: " + basePenalty);
         
+        for (Slot s : parser.getCourseSlots()) {
+        	s.scheduled.clear();
+        }
+        for (Slot s : parser.getLabSlots()) {
+        	s.scheduled.clear();
+        }
+        
         
         // This just floors the number, might want to round it?
         minPenalty = (int) (basePenalty + subtractingPenalties);				
@@ -89,10 +96,23 @@ public class Solver{
         
         basePenalty = originalBasePen;
         subtractingPenalties = originalSubPen;
+
 		bestSolution = breadthFirstSolve(partialSolution, toBeScheduled);
-        if(!bestSolution.isEmpty()){
-        	minPenalty = (int) (basePenalty + subtractingPenalties);
-            System.out.println("Found an assignment with penalty of: " + Float.toString(minPenalty));
+        if(!bestSolution.isEmpty()){           
+            
+            
+            bestSolution.remove(0); // remove root
+            for(Node n : bestSolution) {
+            	ScheduledClass current = (n.getCourse() == null) ? n.getLab() : n.getCourse();
+            	Slot s = n.getSlot();
+            	 System.out.println(current.getDepartment() + " " + current.getCourseNum() + " " + current.getLectureNum() + " --> " + s.getDay() + " : " + s.getSlotTime());
+                 if (current instanceof Course) {
+                 	System.out.println("Course");
+                 } else {
+                 	System.out.println("Lab");
+                 }
+            }
+            System.out.println("MINPENALTY: " + minPenalty);
         }
     }
 
@@ -107,6 +127,7 @@ public class Solver{
     	// SHOULD SORT SLOTS SO ONES WITH HIGHER MINCOURSES/LABS COME FIRST
 
     	ArrayList<ScheduledClass> toBeScheduled_copy = new ArrayList<ScheduledClass>(toBeScheduled);
+    	ArrayList<Node> solution_copy = new ArrayList<Node>(solution);
         ScheduledClass current = toBeScheduled_copy.get(0);
         toBeScheduled_copy.remove(0);
         float subPenReduction = 0.0f;
@@ -119,12 +140,12 @@ public class Solver{
         Collections.sort(slots);
         
         for(Slot s : slots){
-            Node newNode = new Node(s, current, solution.get(solution.size()-1));
+            Node newNode = new Node(s, current, solution_copy.get(solution_copy.size()-1));
             if (!validator.validate(newNode)){
                 continue;
             }
             
-            solution.add(newNode);
+            solution_copy.add(newNode);
             s.scheduled.add(current);
             basePenAddition = evaluator.evaluateSectionOverlap(newNode);
             subPenReduction = calcSubtractingPenalties(newNode);
@@ -133,10 +154,10 @@ public class Solver{
    
             if(toBeScheduled_copy.isEmpty()){
                 System.out.println("Depth first search found a solution.");
-                return solution;
+                return solution_copy;
             } else {
                 // go down this branch
-                ArrayList<Node> temp = depthFirstSolve(solution, toBeScheduled_copy);
+                ArrayList<Node> temp = depthFirstSolve(solution_copy, toBeScheduled_copy);
                 if (!temp.isEmpty()){
                 // if solution found in this branch return it up the recursion
                     return temp;
@@ -146,13 +167,17 @@ public class Solver{
             basePenalty -= basePenAddition;
             subtractingPenalties += subPenReduction;
             s.scheduled.remove(s.scheduled.size()-1);
-            solution.remove(solution.size()-1);	// optimization here is to remove last element
+            solution_copy.remove(solution_copy.size()-1);	// optimization here is to remove last element
         }
         // if hasn't returned by this point no solution in this branch
         // return empty array list
         return new ArrayList<Node>();
     }
 
+    
+    
+    
+    
     private ArrayList<Node> breadthFirstSolve(ArrayList<Node> solution, ArrayList<ScheduledClass> toBeScheduled){
     	
         ScheduledClass current = toBeScheduled.get(0);
@@ -182,6 +207,7 @@ public class Solver{
             }
             newNode.subPen = subPenReduction;
             newNode.basePen = basePenAddition;
+            newNode.setTotalPenalty((int) (subPenReduction*-1 + basePenAddition));
             orderedBestChildren.add(newNode);
         }
         Collections.sort(orderedBestChildren);
@@ -189,22 +215,25 @@ public class Solver{
         // loop through orderedBestSlots to next level in tree
         ArrayList<Node> tentativeSolution = new ArrayList<Node>();
         for(Node n : orderedBestChildren){
-            ArrayList<Node> temp = solution;
+            ArrayList<Node> temp = new ArrayList<>(solution);
             basePenalty += n.basePen;
+            Slot s = n.getSlot();
+            s.scheduled.add(n.getAssigned());
             subtractingPenalties -= n.subPen;
             temp.add(n);
+
 
             if(toBeScheduled_copy.isEmpty()){
                 // this is a leaf node, check if it's solution is better
             	if (basePenalty + subtractingPenalties < minPenalty) {
             		minPenalty = (int) (basePenalty + subtractingPenalties);
-            		basePenalty -= n.basePen;
-                    subtractingPenalties += n.subPen;
+            		System.out.println("Found Solution with: " + minPenalty);
             		return temp;
             	} else {
+            		s.scheduled.remove(s.scheduled.size()-1);
             		basePenalty -= n.basePen;
                     subtractingPenalties += n.subPen;
-            		return new ArrayList<Node>();
+            		continue;
             	}
             } else {
                 temp = breadthFirstSolve(temp, toBeScheduled_copy);
@@ -213,11 +242,16 @@ public class Solver{
                     tentativeSolution = temp;
                 }
             }
+            
+            s.scheduled.remove(s.scheduled.size()-1);
             basePenalty -= n.basePen;
             subtractingPenalties += n.subPen;
         }
         return tentativeSolution;
     }
+    
+    
+    
     
     private void initializePenalties() {
     	subtractingPenalties = evaluator.initializeMinFillPenalty() + evaluator.initializeNotPairedPenalty()

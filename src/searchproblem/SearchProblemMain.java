@@ -24,7 +24,7 @@ public class SearchProblemMain {
 		
 		
 		// ----------------------------------- TEMPORARILY HARD CODE -----------------------------------
-		String fileName = "manySolutions.txt";
+		String fileName = "shortSample.txt";
 		int minfillCoursePen = 1;
 		int minfillTutPen = 1;
 		int secOverlapPen = 1;
@@ -40,7 +40,7 @@ public class SearchProblemMain {
 		File file = new File(fileName);
 		Parser parser = new Parser(file);
 		
-		Evaluator evaluator = new Evaluator(parser, minfillCoursePen, minfillTutPen, secOverlapPen, notPairedPen, weightMinfill, weightPref, weightPair, weightSecOverlap);
+		Evaluator evaluator = new Evaluator(parser, minfillTutPen, minfillCoursePen,  secOverlapPen, notPairedPen, weightMinfill, weightPref, weightPair, weightSecOverlap);
 		Solver solver = new Solver(parser, evaluator);
 		solver.solve();
 	}

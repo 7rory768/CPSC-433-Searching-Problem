@@ -16,7 +16,7 @@ public class Evaluator {
 	float weightPair;
 	float weightSecOverlap;
 	
-	public Evaluator(Parser p, int pen_labsmin, int pen_coursemin, int pen_notpaired, int pen_section, float wMF, float wPref, float wPair, float wSO) {
+	public Evaluator(Parser p, int pen_labsmin, int pen_coursemin, int pen_section, int pen_notpaired, float wMF, float wPref, float wPair, float wSO) {
 		this.parser = p;
 		
 		this.minFillTutPen = pen_labsmin;
@@ -106,7 +106,7 @@ public class Evaluator {
 	}
 	
 	public float initializeNotPairedPenalty() {
-		return parser.getNumPairs() * weightPair;
+		return parser.getNumPairs() * weightPair * notPairedPen;
 	}
 	
 	public float initializePreferrancePenalty() {

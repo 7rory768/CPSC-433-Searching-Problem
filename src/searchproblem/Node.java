@@ -60,6 +60,14 @@ public class Node implements Comparable<Node>{
 		this.totalPenalty = 0;
 		this.preferencePenalty = 0;
 	}
+	
+	public ScheduledClass getAssigned() {
+		if(this.course == null) {
+			return this.getLab();
+		} else {
+			return this.getCourse();
+		}
+	}
 
 	//   	GETTERS BEGIN
 	public Slot getSlot() {
