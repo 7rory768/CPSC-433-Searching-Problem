@@ -78,7 +78,6 @@ public class Validator{
 
 		while(current != null && (current.getCourse() != null || current.getLab() != null))
 		{
-			
 			if(current.getCourse() != null && assignedCourse != null
 					&& current.getSlot() == assignedSlot 
 					&& current.getCourse().getCourseNum() / 100 == 5 && assignedCourse.getCourseNum() / 100 == 5 
@@ -148,7 +147,7 @@ public class Validator{
 
 		}
 
-			if(slotCount > assignedSlot.getMaxCourses())
+		if(slotCount > assignedSlot.getMaxCourses())
 			return false; 
 		
 		return true;
@@ -156,18 +155,17 @@ public class Validator{
 	
 
 	private boolean isOverlap(Node a, Node b){
-		
+
 
 		if(a.getLab() != null && b.getCourse() != null)
 		{
 			if( ( (a.getSlot().getDay() == Day.MONDAY || a.getSlot().getDay() == Day.FRIDAY) && b.getSlot().getDay() == Day.MONDAY )
 					|| (a.getSlot().getDay() == Day.TUESDAY  && b.getSlot().getDay() == Day.TUESDAY) ) 
 			{
-				if(a.getSlot().getSlotTime() < getEndTime(b.getSlot(), true) || b.getSlot().getSlotTime() < getEndTime(a.getSlot(), false)){
-					if(a.getLab().getLectureNum() == 0)
-						return true;
-					else if(a.getLab().getLectureNum() == b.getCourse().getLectureNum())
-						return true;
+				if((a.getSlot().getSlotTime() < getEndTime(b.getSlot(), false) && getEndTime(b.getSlot(), false) - a.getSlot().getSlotTime() < 50 )|| 
+						(b.getSlot().getSlotTime() < getEndTime(a.getSlot(), true) && getEndTime(a.getSlot(), true) - b.getSlot().getSlotTime() < 50)){
+
+					return true;
 
 				}	
 			}
@@ -177,17 +175,20 @@ public class Validator{
 			if( a.getSlot().getDay() == Day.MONDAY  && (b.getSlot().getDay() == Day.MONDAY || b.getSlot().getDay() == Day.FRIDAY) ||
 					(a.getSlot().getDay() == Day.TUESDAY  && b.getSlot().getDay() == Day.TUESDAY)) 
 			{
-				if(a.getSlot().getSlotTime() < getEndTime(b.getSlot(), false) || b.getSlot().getSlotTime() < getEndTime(a.getSlot(), true)){
-					return true;
+				if((a.getSlot().getSlotTime() < getEndTime(b.getSlot(), true) && getEndTime(b.getSlot(), true) - a.getSlot().getSlotTime() < 50 )|| 
+						(b.getSlot().getSlotTime() < getEndTime(a.getSlot(), false) && getEndTime(a.getSlot(), false) - b.getSlot().getSlotTime() < 50)){
 
-				}	
+					return true;
+				 
+				}
 			}
 		}
 		
-		if(a.getCourse() == b.getCourse() && a.getLab() == b.getLab())
+		if((a.getCourse() != null && b.getCourse() != null) || (a.getLab() != null && b.getLab() != null))
 		{
-			return (a.getSlot() == b.getSlot());
+			return (a.getSlot().getSlotTime() == b.getSlot().getSlotTime() && a.getSlot().getDay() == b.getSlot().getDay());
 		}
+
 
 		return false;
 	}
