@@ -31,6 +31,9 @@ public class Validator{
 		else
 			assignedClass = assignedLab;
 
+		if(assignedSlot == null)
+			return false;
+		
 		if(assignedCourse != null && assignedSlot.getSlotTime() == 1100 && assignedSlot.getDay() == Day.TUESDAY)	{
 			return false;
 		}
