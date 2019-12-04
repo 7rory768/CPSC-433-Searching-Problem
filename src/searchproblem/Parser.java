@@ -18,8 +18,12 @@ public class Parser {
 	private final HashMap<ScheduledClass, Slot> partialAssignments = new HashMap<>();
 	private String name;
 	private int numPairs = 0;
+	private boolean does813Exist;
+	private boolean does913Exist;
 	
 	public Parser(File file) {
+		does813Exist = false;
+		does913Exist = false;
 		if (file.exists()) {
 			try {
 				Scanner scanner = new Scanner(file);
@@ -224,10 +228,14 @@ public class Parser {
 		String department = args[0];
 		int courseNum = Integer.valueOf(args[1]), lectureNum = Integer.valueOf(args[3]);
 		
-		if (department.equals("CPSC") && courseNum == 313) {
+		if (department.equals("CPSC") && courseNum == 313 && !does813Exist) {
+			does813Exist = true;
 			courses.add(new Course("CPSC", 813, 1));
-		} else if (department.equals("CPSC") && courseNum == 413) {
+			courseSlots.add(new Slot(Day.TUESDAY, 1800));
+		} else if (department.equals("CPSC") && courseNum == 413 && !does913Exist) {
+			does913Exist = true;
 			courses.add(new Course("CPSC", 913, 1));
+			courseSlots.add(new Slot(Day.TUESDAY, 1800));
 		}
 		return new Course(department, courseNum, lectureNum);
 	}

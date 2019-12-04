@@ -45,7 +45,7 @@ public class Validator{
 
 		if(isCourse813)
 		{
-			if(!(assignedSlot.getDay() == Day.TUESDAY && assignedSlot.getSlotTime() >= 1800))
+			if(!(assignedSlot.getDay() == Day.TUESDAY && assignedSlot.getSlotTime() != 1800))
 			{
 				return false;
 			}
@@ -66,7 +66,7 @@ public class Validator{
 		
 		if(isCourse913)
 		{
-			if(!(assignedSlot.getDay() == Day.TUESDAY && assignedSlot.getSlotTime() >= 1800))
+			if(!(assignedSlot.getDay() == Day.TUESDAY && assignedSlot.getSlotTime() != 1800))
 			{
 				return false;
 			}
