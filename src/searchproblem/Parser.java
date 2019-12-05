@@ -20,10 +20,12 @@ public class Parser {
 	private int numPairs = 0;
 	private boolean does813Exist;
 	private boolean does913Exist;
+	private boolean does13SlotExist;
 	
 	public Parser(File file) {
 		does813Exist = false;
 		does913Exist = false;
+		does13SlotExist = false;
 		if (file.exists()) {
 			try {
 				Scanner scanner = new Scanner(file);
@@ -237,11 +239,17 @@ public class Parser {
 		if (department.equals("CPSC") && courseNum == 313 && !does813Exist) {
 			does813Exist = true;
 			courses.add(new Course("CPSC", 813, 1));
-			courseSlots.add(new Slot(Day.TUESDAY, 1800));
+			if (!does13SlotExist) {
+				courseSlots.add(new Slot(Day.TUESDAY, 1800));
+				does13SlotExist = true;
+			}
 		} else if (department.equals("CPSC") && courseNum == 413 && !does913Exist) {
 			does913Exist = true;
 			courses.add(new Course("CPSC", 913, 1));
-			courseSlots.add(new Slot(Day.TUESDAY, 1800));
+			if (!does13SlotExist) {
+				courseSlots.add(new Slot(Day.TUESDAY, 1800));
+				does13SlotExist = true;
+			}
 		}
 		return new Course(department, courseNum, lectureNum);
 	}

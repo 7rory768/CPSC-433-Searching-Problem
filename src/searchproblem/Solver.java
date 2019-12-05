@@ -121,7 +121,7 @@ public class Solver{
     
     
     
-    private ArrayList<Node> depthFirstSolve(ArrayList<Node> solution, ArrayList<ScheduledClass> toBeScheduled){   	
+    private ArrayList<Node> depthFirstSolve(ArrayList<Node> solution, ArrayList<ScheduledClass> toBeScheduled){
     	ArrayList<ScheduledClass> toBeScheduled_copy = new ArrayList<ScheduledClass>(toBeScheduled);
     	ArrayList<Node> solution_copy = new ArrayList<Node>(solution);
         ScheduledClass current = toBeScheduled_copy.get(0);
@@ -283,7 +283,10 @@ public class Solver{
     	
     }
     
+    
+    
     private ArrayList<ScheduledClass> sortCourses(ArrayList<Course> courses, ArrayList<ScheduledClass> labs) {
+    	ArrayList<ScheduledClass> hold = new ArrayList<>();
     	ArrayList<ScheduledClass> order = new ArrayList<>();
     	ArrayList<ScheduledClass> toRemove = new ArrayList<>();    	
     	
@@ -296,14 +299,18 @@ public class Solver{
     		}
     	}
     	for(ScheduledClass r : toRemove) {
-			order.remove(r);
+			courses.remove(r);
 		}
     	
     	
-    	order.addAll(courses);
-    	order.addAll(labs);
+    	hold.addAll(courses);
+    	hold.addAll(labs);
     	// 30 works for deptinst2
-    	Collections.shuffle(order, new Random(60));
+    	Collections.shuffle(hold, new Random(60));
+    	order.addAll(hold);
+    	
+    	
+    	
     	return order;
     	
     	
