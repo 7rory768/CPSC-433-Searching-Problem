@@ -185,6 +185,12 @@ public class Parser {
 				(this.incompatibleClassPairs.get(class2) != null && this.incompatibleClassPairs.get(class2).contains(class1));
 	}
 	
+	public int getNumIncompatabilities(ScheduledClass sc) {
+		if(incompatibleClassPairs.containsKey(sc))
+			return incompatibleClassPairs.get(sc).size();
+		else return 0;
+	}
+	
 	public boolean isAPreferredPair(ScheduledClass class1, ScheduledClass class2) {
 		return this.preferredClassPairs.get(class1).contains(class2) || this.preferredClassPairs.get(class2).contains(class1);
 	}

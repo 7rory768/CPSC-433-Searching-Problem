@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import searchproblem.classes.*;
 
@@ -19,6 +20,8 @@ public class Solver{
     
     private float originalSubPen;
     private float originalBasePen;
+    private int timeoutTime = 60;
+    private long startTime;
     
     private boolean zeroFound = false;
 	
@@ -29,17 +32,17 @@ public class Solver{
 	}
 
     public void solve(){
+    	System.out.println("Running ...");
         Node root = new Node();
         initializePenalties();
         ArrayList<Node> bestSolution = new ArrayList<Node>();
 
-        ArrayList<ScheduledClass> toBeScheduled = sortCourses(new ArrayList<ScheduledClass>(parser.getCourses()), new ArrayList<ScheduledClass>(parser.getLabs()));
+        ArrayList<ScheduledClass> toBeScheduled = sortCourses(new ArrayList<Course>(parser.getCourses()), new ArrayList<ScheduledClass>(parser.getLabs()));
         //new ArrayList<ScheduledClass>(parser.getCourses());
         //toBeScheduled.addAll(parser.getLabs());
         
         ArrayList<Node> partialSolution = new ArrayList<Node>();
         partialSolution.add(root);
-        System.out.println("Number of courses/labs to schedule: " + toBeScheduled.size());
           
         // iterate through partial assignments and make a node for each one
         ArrayList<ScheduledClass> copy = new ArrayList<ScheduledClass>(parser.getCourses());
@@ -68,6 +71,8 @@ public class Solver{
         
         
 	    bestSolution = depthFirstSolve(partialSolution, toBeScheduled);	
+	    startTime = System.currentTimeMillis();
+	    System.out.println("Will now perform breadth search for 60 seconds until timing out, and outputting the best solution.");
                
         // Clear slots
         for (Slot s : parser.getCourseSlots()) {
@@ -116,15 +121,7 @@ public class Solver{
     
     
     
-    private ArrayList<Node> depthFirstSolve(ArrayList<Node> solution, ArrayList<ScheduledClass> toBeScheduled){
-        // basically don't use eval for this one, just want any solution
-    	// TO-DO .. think about looking at preferred slots first and unpreferred slots last if performance bad
-    	
-    	// IF THIS COURSE HAS A PAIR ENTRY, NEED TO MAKE SURE IT'S PREFERRED SLOTS ARE FIRST !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    	// SHOULD SORT SLOTS SO ONES WITH HIGHER MINCOURSES/LABS COME FIRST
-    	
-    	
-    	
+    private ArrayList<Node> depthFirstSolve(ArrayList<Node> solution, ArrayList<ScheduledClass> toBeScheduled){   	
     	ArrayList<ScheduledClass> toBeScheduled_copy = new ArrayList<ScheduledClass>(toBeScheduled);
     	ArrayList<Node> solution_copy = new ArrayList<Node>(solution);
         ScheduledClass current = toBeScheduled_copy.get(0);
@@ -153,8 +150,10 @@ public class Solver{
             subtractingPenalties -= subPenReduction;
    
             if(toBeScheduled_copy.isEmpty()){
-                System.out.println("Depth first search found a solution.");
+                
                 minPenalty = (int) (basePenalty + subtractingPenalties);
+                if (minPenalty < 0) minPenalty = 0;
+                System.out.println("Depth first search found a solution with penalty: " + minPenalty);
                 return solution_copy;
             } else {
                 // go down this branch
@@ -181,6 +180,10 @@ public class Solver{
     
     private ArrayList<Node> breadthFirstSolve(ArrayList<Node> solution, ArrayList<ScheduledClass> toBeScheduled){
         ScheduledClass current = toBeScheduled.get(0);
+        long currentTime = System.currentTimeMillis();
+        if ((currentTime-startTime)/1000 > timeoutTime) {
+        	return new ArrayList<Node>();
+        }
 
         // so we don't mutate the list for nodes up higher in the tree
         ArrayList<ScheduledClass> toBeScheduled_copy = new ArrayList<ScheduledClass>(toBeScheduled);
@@ -280,19 +283,41 @@ public class Solver{
     	
     }
     
-    private ArrayList<ScheduledClass> sortCourses(ArrayList<ScheduledClass> courses, ArrayList<ScheduledClass> labs) {
+    private ArrayList<ScheduledClass> sortCourses(ArrayList<Course> courses, ArrayList<ScheduledClass> labs) {
     	ArrayList<ScheduledClass> order = new ArrayList<>();
-    	ArrayList<ScheduledClass> toRemove = new ArrayList<>();
+    	ArrayList<ScheduledClass> toRemove = new ArrayList<>();    	
     	
-    	for (ScheduledClass course : courses) {
+    	for (Course course : courses) {
     		if (course.getDepartment().equals("CPSC") && (course.getCourseNum() == 813 || course.getCourseNum() == 913)) {
     			order.add(course);
     			toRemove.add(course);
+    		} else {
+    			course.numIncompatible = parser.getNumIncompatabilities(course);
     		}
     	}
     	for(ScheduledClass r : toRemove) {
-			courses.remove(r);
+			order.remove(r);
 		}
+    	
+    	
+    	order.addAll(courses);
+    	order.addAll(labs);
+    	// 30 works for deptinst2
+    	Collections.shuffle(order, new Random(60));
+    	return order;
+    	
+    	
+    	
+    	
+    	
+/*
+    	for (ScheduledClass l : labs) {
+    		l.numIncompatible = parser.getNumIncompatabilities(l);
+    	}
+    	order.addAll(labs);    	
+    	Collections.sort(order);
+    	
+    	
     	for (ScheduledClass course : courses) {
     		order.add(course);
     		for (ScheduledClass lab : labs) {
@@ -306,7 +331,7 @@ public class Solver{
     			labs.remove(r);
     		}
     	}
-    	return order;
+    	return order;*/
     }
     
     private void initializePenalties() {

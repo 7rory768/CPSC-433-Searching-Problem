@@ -1,7 +1,10 @@
 package searchproblem.classes;
 
-public class Course extends ScheduledClass {
+import searchproblem.Node;
 
+
+
+public class Course extends ScheduledClass{
 	public Course(String department, int courseNum, int lectureNum) {
 		super(department, courseNum, lectureNum);
 	}
@@ -10,5 +13,4 @@ public class Course extends ScheduledClass {
 	public boolean equals(Object o) {
 		return super.equals(o);
 	}
-
 }

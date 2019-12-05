@@ -2,11 +2,12 @@ package searchproblem.classes;
 
 import java.util.ArrayList;
 
-public abstract class ScheduledClass {
+public abstract class ScheduledClass implements Comparable<ScheduledClass> {
 
 	private final String department;
 	private final int courseNum;
 	private final int lectureNum;
+	public int numIncompatible;
 	private final ArrayList<Slot> unwantedSlots = new ArrayList<Slot>();
 
 	public ScheduledClass(String department, int courseNum, int lectureNum) {
@@ -57,6 +58,16 @@ public abstract class ScheduledClass {
 		if (scheduledClass.getDepartment().equals(this.getDepartment()) && scheduledClass.getCourseNum() == this.getCourseNum() && scheduledClass.getLectureNum() == this.getLectureNum()) return true;
 		
 		return false;
+	}
+	
+	public int compareTo(ScheduledClass other_course)
+	{
+		if(this.numIncompatible == other_course.numIncompatible)
+			return 0;
+		else if(this.numIncompatible < other_course.numIncompatible) {
+			return 1;
+		} else
+			return -1;
 	}
 
 }
