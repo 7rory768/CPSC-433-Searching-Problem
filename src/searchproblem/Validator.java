@@ -10,6 +10,11 @@ public class Validator{
 	{
 		this.parser = parser;
 	}
+	
+	Node _913;
+	Node _813;
+	ScheduledClass _313 = null;
+	ScheduledClass _413 = null;
 
 	public boolean validate(Node assignment){
 		int slotCount = 1;
@@ -22,6 +27,7 @@ public class Validator{
 		
 		boolean isCourse813 = (assignedCourse != null && assignedCourse.getDepartment().equals("CPSC") && assignedCourse.getCourseNum() == 813);
 		boolean isCourse913 = (assignedCourse != null && assignedCourse.getDepartment().equals("CPSC") && assignedCourse.getCourseNum() == 913);
+
 
 		ScheduledClass currentClass;
 		ScheduledClass assignedClass;
@@ -43,44 +49,39 @@ public class Validator{
 		if(assignedClass.getUnwantedSlots().contains(assignedSlot))
 			return false;
 
-		if(isCourse813)
-		{
-			if(!(assignedSlot.getDay() == Day.TUESDAY && assignedSlot.getSlotTime() != 1800))
+		if(isCourse813 || isCourse913)
+		{			
+			if(assignedSlot.getDay() != Day.TUESDAY || assignedSlot.getSlotTime() != 1800)
 			{
 				return false;
 			}
-			for(Course c: parser.getCourses())
-			{
-				if((c.getDepartment() == "CPSC" && c.getCourseNum() == 313))
-					return false;
+			assignedSlot.maxCourses++;
+			if(isCourse813) _813 = assignment;
+			else _913 = assignment;
+			
+			// search for 313 and 413
+			for (ScheduledClass sc : parser.getCourses()) {
+				if(sc.getDepartment().equals("CPSC")) {
+					if (sc.getCourseNum() == 313) _313 = sc;
+					if (sc.getCourseNum() == 413) _413 = sc;
+				}
 			}
-			for(Lab l: parser.getLabs())
-			{
-				if((l.getDepartment() == "CPSC" && l.getCourseNum() == 313))
-					return false;
-			}
+			
 		}
 
 		
 		
-		
-		if(isCourse913)
-		{
-			if(!(assignedSlot.getDay() == Day.TUESDAY && assignedSlot.getSlotTime() != 1800))
+		// if current class has conflict with 313 || 413
+		if(assignedCourse != null && (parser.areClassesIncompatible(_313, assignment.getCourse()) || parser.areClassesIncompatible(_413, assignment.getCourse())
+				|| assignedCourse.getCourseNum() == 313 || assignedCourse.getCourseNum() == 413)) {
+
+			if(assignedSlot.getDay() == Day.TUESDAY && assignedSlot.getSlotTime() > 1630 & assignedSlot.getSlotTime() < 1930)
 			{
 				return false;
 			}
-			for(Course c: parser.getCourses())
-			{
-				if((c.getDepartment() == "CPSC" && c.getCourseNum() == 413))
-					return false;
-			}
-			for(Lab l: parser.getLabs())
-			{
-				if((l.getDepartment() == "CPSC" && l.getCourseNum() == 413))
-					return false;
-			}
 		}
+		
+		
 
 		while(current != null && (current.getCourse() != null || current.getLab() != null))
 		{
@@ -138,7 +139,7 @@ public class Validator{
 					for(ScheduledClass s: conflicts)
 						if(parser.areClassesIncompatible(currentClass, s))
 							return false;
-				}
+				}	
 			}
 			else if(isCourse913)
 			{

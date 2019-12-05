@@ -9,7 +9,7 @@ public class Slot implements Comparable<Slot> {
     private final Day day;
     private final int slotTime; // Time represented by removing the : from the string (ex. 13:30 = 1330);
     private final int minCourses;
-    private final int maxCourses;
+    public int maxCourses;
     public ArrayList<ScheduledClass> scheduled = new ArrayList<>();
     
     public Slot(Day day, int slotTime, int maxCourses, int minCourses) {

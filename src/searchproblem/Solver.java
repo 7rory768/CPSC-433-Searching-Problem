@@ -71,8 +71,7 @@ public class Solver{
         
         
 	    bestSolution = depthFirstSolve(partialSolution, toBeScheduled);	
-	    startTime = System.currentTimeMillis();
-	    System.out.println("Will now perform breadth search for 60 seconds until timing out, and outputting the best solution.");
+	    
                
         // Clear slots
         for (Slot s : parser.getCourseSlots()) {
@@ -87,6 +86,9 @@ public class Solver{
         basePenalty = originalBasePen;
         subtractingPenalties = originalSubPen;
         
+        
+        startTime = System.currentTimeMillis();
+	    System.out.println("Will now perform breadth search for 60 seconds until timing out, and outputting the best solution.");
 		partialSolution = breadthFirstSolve(partialSolution, toBeScheduled);
         if(!partialSolution.isEmpty()){
             bestSolution = partialSolution;            
@@ -124,7 +126,7 @@ public class Solver{
     private ArrayList<Node> depthFirstSolve(ArrayList<Node> solution, ArrayList<ScheduledClass> toBeScheduled){
     	ArrayList<ScheduledClass> toBeScheduled_copy = new ArrayList<ScheduledClass>(toBeScheduled);
     	ArrayList<Node> solution_copy = new ArrayList<Node>(solution);
-        ScheduledClass current = toBeScheduled_copy.get(0);
+        ScheduledClass current = toBeScheduled_copy.get(0);        
         toBeScheduled_copy.remove(0);
         float subPenReduction = 0.0f;
         float basePenAddition = 0.0f;
@@ -294,8 +296,6 @@ public class Solver{
     		if (course.getDepartment().equals("CPSC") && (course.getCourseNum() == 813 || course.getCourseNum() == 913)) {
     			order.add(course);
     			toRemove.add(course);
-    		} else {
-    			course.numIncompatible = parser.getNumIncompatabilities(course);
     		}
     	}
     	for(ScheduledClass r : toRemove) {
@@ -305,8 +305,8 @@ public class Solver{
     	
     	hold.addAll(courses);
     	hold.addAll(labs);
-    	// 30 works for deptinst2
-    	Collections.shuffle(hold, new Random(60));
+    	// 235 works
+    	Collections.shuffle(hold, new Random(235));
     	order.addAll(hold);
     	
     	
